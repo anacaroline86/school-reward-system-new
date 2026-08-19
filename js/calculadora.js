@@ -146,6 +146,40 @@ function atualizarStatusNaTela(bimestre) {
     }
 }
 
+function salvarDados() {
+    const dados = {
+        bimestres: bimestres,
+        bimestreAtual: bimestreAtual
+    };
+
+    localStorage.setItem ("sistemaRecompensa", JSON.stringify(dados));
+
+}
+
+function carregarDados() {
+    const dadosSalvos = localStorage.getItem("sistemaRecompensa");
+
+    if (!dadosSalvos) {
+        return;
+    }
+
+    const dados = JSON.parse(dadosSalvos);
+
+    bimestres.primeiro = dados.bimestres.primeiro;
+    bimestres.segundo = dados.bimestres.segundo;
+    bimestres.terceiro = dados.bimestres.terceiro;
+    bimestres.quarto = dados.bimestres.quarto;
+    bimestreAtual = dados.bimestreAtual;
+
+    selectBimestre.value = bimestreAtual;
+    tituloBimestre.textContent = nomesBimestres[bimestreAtual];
+    escreverNotasNaTela(bimestres[bimestreAtual].notas);
+
+    if (Object.keys(bimestres[bimestreAtual].notas).length > 0){
+        mostrarResultado(bimestres[bimestreAtual]);
+    }
+}
+
 botaoCalcular.addEventListener("click", function(){
     let totalPositivo = 0;
     let totalDescontos = 0;
@@ -175,6 +209,7 @@ botaoCalcular.addEventListener("click", function(){
     bimestres[bimestreAtual].totalPositivo = totalPositivo;
     bimestres[bimestreAtual].totalDescontos = totalDescontos;
     bimestres[bimestreAtual].valorTotal = valorBimestre;
+    salvarDados();
 });
 
 botaoFechar.addEventListener("click", function (){
@@ -189,6 +224,7 @@ botaoFechar.addEventListener("click", function (){
     bimestres[bimestreAtual].dataFechamento = new Date().toLocaleDateString("pt-BR");
 
     atualizarStatusNaTela(bimestres[bimestreAtual]);
+    salvarDados();
 });
 
 botaoPagar.addEventListener("click", function () {
@@ -199,8 +235,8 @@ botaoPagar.addEventListener("click", function () {
     
     bimestres[bimestreAtual].pago = true;
     bimestres[bimestreAtual].dataPagamento = new Date().toLocaleDateString("pt-BR");
-
     atualizarStatusNaTela(bimestres[bimestreAtual]);
+    salvarDados();
 });
 
 selectBimestre.addEventListener("change", function(){
@@ -217,6 +253,7 @@ selectBimestre.addEventListener("change", function(){
     } else {
         limparResultados();
     }
+    salvarDados();
 });
-
+carregarDados();
 atualizarStatusNaTela(bimestres[bimestreAtual]);
