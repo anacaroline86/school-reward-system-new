@@ -29,10 +29,10 @@ const nomesBimestres = {
 };
 
 const bimestres = {
-    primeiro: { notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null},
-    segundo: { notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null},
-    terceiro: {notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null},
-    quarto: {notas:{}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null}
+    primeiro: { notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null, pago: false, dataPagamento: null},
+    segundo: { notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null, pago: false, dataPagamento: null},
+    terceiro: {notas: {}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null, pago: false, dataPagamento: null},
+    quarto: {notas:{}, totalPositivo: 0, totalDescontos: 0, valorTotal: 0, fechado: false, dataFechamento: null, pago: false, dataPagamento: null}
 };
 
 let bimestreAtual = "primeiro";
@@ -47,6 +47,9 @@ const valorBimestreE1 = document.getElementById("valor-bimestre");
 const botaoFechar = document.getElementById("botao-fechar");
 const statusBimestre = document.getElementById("status-bimestre");
 const dataFechamento = document.getElementById("data-fechamento");
+const botaoPagar = document.getElementById("botao-pagar");
+const statusPagamento = document.getElementById("status-pagamento");
+const dataPagamento = document.getElementById("data-pagamento");
 
 function lerNotasDaTela() {
     const notas = {};
@@ -118,14 +121,28 @@ botaoFechar.disabled = bloquear;
 }
 
 function atualizarStatusNaTela(bimestre) {
-    if (bimestre.fechado) {
+
+    if(bimestre.pago) {
         statusBimestre.textContent = "Status: Fechado";
         dataFechamento.textContent = "Fechado em: " + bimestre.dataFechamento;
+        statusPagamento.textContent = "Pagamento: Pago";
+        dataPagamento.textContent = "Pago em: " + bimestre.dataPagamento;
         bloquearCampos(true);
+        botaoPagar.disabled = true;
+    } else if (bimestre.fechado) {
+        statusBimestre.textContent = "Status: Fechado";
+        dataFechamento.textContent = "Fechado em: " + bimestre.dataFechamento;
+        statusPagamento.textContent = "Pagamento: Pendente";
+        dataPagamento.textContent = "";
+        bloquearCampos(true);
+        botaoPagar.disabled = false;
     } else {
         statusBimestre.textContent = "Status: Aberto";
         dataFechamento.textContent = "";
+        statusPagamento.textContent = "Pagamento: -";
+        dataPagamento.textContent = "";
         bloquearCampos(false);
+        botaoPagar.disabled = true;
     }
 }
 
@@ -174,6 +191,18 @@ botaoFechar.addEventListener("click", function (){
     atualizarStatusNaTela(bimestres[bimestreAtual]);
 });
 
+botaoPagar.addEventListener("click", function () {
+    if (!bimestres[bimestreAtual].fechado) {
+        alert("O bimestre precisa estar fechado para marcar o pagamento.");
+        return;
+    }
+    
+    bimestres[bimestreAtual].pago = true;
+    bimestres[bimestreAtual].dataPagamento = new Date().toLocaleDateString("pt-BR");
+
+    atualizarStatusNaTela(bimestres[bimestreAtual]);
+});
+
 selectBimestre.addEventListener("change", function(){
     bimestres[bimestreAtual].notas = lerNotasDaTela();
     
@@ -189,3 +218,5 @@ selectBimestre.addEventListener("change", function(){
         limparResultados();
     }
 });
+
+atualizarStatusNaTela(bimestres[bimestreAtual]);
