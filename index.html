@@ -13,26 +13,14 @@
         <option value="terceiro">3º Bimestre</option>
         <option value="quarto">4º Bimestre</option>
     </select>
+
     <h1 id="titulo-bimestre">1º Bimestre</h1>
-    <label for="notaportugues">Português:</label>
-    <input type="number" id="notaportugues" min="0" max="10" step="0.1">
-    <label for="notamatematica">Matemática:</label>
-    <input type="number" id="notamatematica" min="0" max="10" step="0.1">
-    <label for="notahistoria">História:</label>
-    <input type="number" id="notahistoria" min="0" max="10" step="0.1">
-    <label for="notageografia">Geografia:</label>
-    <input type="number" id="notageografia" min="0" max="10" step="0.1">
-    <label for="notaciencias">Ciências:</label>
-    <input type="number" id="notaciencias" min="0" max="10" step="0.1">
-    <label for="notaingles">Inglês:</label>
-    <input type="number" id="notaingles" min="0" max="10" step="0.1">
-    <label for="notaedfisica">Educação Física:</label>
-    <input type="number" id="notaedfisica" min="0" max="10" step="0.1">
-    <label for="notaartes">Artes:</label>
-    <input type="number" id="notaartes" min="0" max="10" step="0.1">
+    <div id="lista-notas-materias"></div>
     <button id="botao-calcular">Calcular bimestre</button>
+    <p id="mensagem-validacao"></p>
     <button id="botao-fechar">Fechar bimestre</button>
     <button id="botao-pagar">Marcar como pago</button>
+    <button id="botao-resetar">Zerar todos os dados</button>
     <p id="status-pagamento">Pagamento: -</p>
     <p id="data-pagamento"></p>
     <p id="status-bimestre">Status: Aberto</p>
@@ -41,6 +29,46 @@
     <p id="total-positivo"></p>
     <p id="total-desconto"></p>
     <p id="valor-bimestre"></p>
+
+    <h2>Resumo do bimestre</h2>
+    <p id="dashboard-notas-cadastradas"></p>
+    <p id="dashboard-notas-acima"></p>
+    <p id="dashboard-notas-abaixo"></p>
+
+    <h2>Resumo do ano</h2>
+    <p id="dashboard-primeiro"></p>
+    <p id="dashboard-segundo"></p>
+    <p id="dashboard-terceiro"></p>
+    <p id="dashboard-quarto"></p>
+    <p id="dashboard-total-pago"></p>
+
+    <label for="config-valor-10">Nota 10:</label>
+    <input type="number" id="config-valor-10" step="1">
+
+    <label for="config-valor-9">Nota 9:</label>
+    <input type="number" id="config-valor-9" step="1">
+
+    <label for="config-valor-8">Nota 8:</label>
+    <input type="number" id="config-valor-8" step="1">
+
+    <label for="config-valor-7">Nota 7:</label>
+    <input type="number" id="config-valor-7" step="1">
+
+    <label for="config-valor-6">Nota 6:</label>
+    <input type="number" id="config-valor-6" step="1">
+
+    <label for="config-valor-5">Nota 5:</label>
+    <input type="number" id="config-valor-5" step="1">
+
+    <button id="botao-salvar-valores">Salvar valores</button>
+    <p id="mensagem-config"></p>
+
+    <h2>Configurações - matérias</h2>
+    <label for="nova-materia">Nome da matéria:</label>
+    <input type="text" id="nova-materia">
+    <button id="botao-adicionar-materia">Adicionar matéria</button>
+    <p id="mensagem-materia"></p>
+
     <script src="js/calculadora.js"></script>
 </body>
 </html>
