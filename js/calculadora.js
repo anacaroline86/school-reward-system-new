@@ -174,7 +174,7 @@ function salvarDados() {
 }
 
 botaoResetar.addEventListener("click", function (){
-    const confirmou = confirm("Isso apaga as notas, fechamentos e pagamentos de TODOS os bimestres. Deseja continuar?");
+    const confirmou = confirm("Isso apaga as matérias, notas, fechamentos e pagamentos de TODOS os bimestres. Deseja continuar?");
 
     if (!confirmou) {
         return;
@@ -185,15 +185,20 @@ botaoResetar.addEventListener("click", function (){
     bimestres.terceiro = criarBimestreVazio();
     bimestres.quarto = criarBimestreVazio();
 
+    materias = [];
+
     bimestreAtual = "primeiro"
     selectBimestre.value = "primeiro"
     tituloBimestre.textContent = nomesBimestres.primeiro;
 
     localStorage.removeItem("sistemaRecompensa");
 
+    montarCamposNotas();
+
     escreverNotasNaTela({});
     limparResultados();
     mensagemValidacao.textContent = "";
+    mensagemMateria.textContent = "";
     atualizarStatusNaTela(bimestres[bimestreAtual]);
     atualizarDashboard();
 
@@ -351,6 +356,13 @@ function criarIdDaMateria(nome) {
 
 function montarCamposNotas() {
     listaNotasMaterias.innerHTML = "";
+
+    if (materias.length === 0) {
+        const textoVazio = document.createElement("p");
+        textoVazio.textContent = "Nenhuma matéria cadastrada";
+        listaNotasMaterias.appendChild(textoVazio);
+        return;
+    }
 
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
