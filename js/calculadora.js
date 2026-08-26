@@ -10,16 +10,7 @@ function calcularValorDaNota(nota) {
     const faixa = Math.floor(nota);
     return valoresPorNota[faixa];
 }
-let materias = [
-    {nome: "Português", id: "notaportugues"},
-    {nome: "Matemática", id: "notamatematica"},
-    {nome: "História", id: "notahistoria"},
-    {nome: "Geografia", id: "notageografia"},
-    {nome: "Ciências", id: "notaciencias"},
-    {nome: "Inglês", id: "notaingles"},
-    {nome: "Educação Física", id: "notaedfisica"},
-    {nome: "Artes", id: "notaartes"}
-];
+let materias = [];
 
 const nomesBimestres = {
     primeiro: "1º Bimestre",
@@ -315,6 +306,11 @@ function textoStatusAno(bimestre) {
 function validarNotas(){
     mensagemValidacao.textContent = "";
 
+    if (materias.length === 0) {
+        mensagemValidacao.textContent = "Adicione pelo menos uma matéria.";
+        return false;
+    }
+
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i]
         const input = document.getElementById(materia.id);
@@ -384,10 +380,6 @@ function montarCamposNotas() {
 }
 
 function removerMateria(id) {
-    if(materias.length <= 1) {
-        mensagemMateria.textContent = "Precisa ter pelo menos uma matéria.";
-        return;
-    }
 
     const materiasNovas = [];
     for (let i = 0; i < materias.length; i++){
