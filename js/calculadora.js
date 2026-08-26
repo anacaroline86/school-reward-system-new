@@ -370,9 +370,45 @@ function montarCamposNotas() {
         input.max = "10";
         input.step = "0.1";
 
+        const botaoRemover = document.createElement("button");
+        botaoRemover.type = "button";
+        botaoRemover.textContent = "Remover";
+        botaoRemover.addEventListener("click", function (){
+            removerMateria(materia.id);
+        });
+
         listaNotasMaterias.appendChild(label);
         listaNotasMaterias.appendChild(input);
+        listaNotasMaterias.appendChild(botaoRemover);
     }
+}
+
+function removerMateria(id) {
+    if(materias.length <= 1) {
+        mensagemMateria.textContent = "Precisa ter pelo menos uma matéria.";
+        return;
+    }
+
+    const materiasNovas = [];
+    for (let i = 0; i < materias.length; i++){
+        if (materias[i].id !== id) {
+            materiasNovas.push(materias[i]);
+        }
+    }
+    materias = materiasNovas;
+
+    const chaves = ["primeiro", "segundo", "terceiro", "quarto"];
+    for (let i = 0; i < chaves.length; i++) {
+        delete bimestres[chaves[i]].notas[id];
+    }
+
+    montarCamposNotas();
+    escreverNotasNaTela(bimestres[bimestreAtual].notas);
+    atualizarStatusNaTela(bimestres[bimestreAtual]);
+    atualizarDashboard();
+    salvarDados();
+
+    mensagemMateria.textContent = "Matéria removida."
 }
 
 function mostrarValoresNaTela() {
