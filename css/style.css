@@ -1,0 +1,98 @@
+:root {
+    --cor-fundo: #edf5f0;
+    --cor-superficie: #ffffff;
+    --cor-texto: #172e29;
+    --cor-texto-suave: #59736b;
+    --cor-marca: #0d6b5c;
+    --cor-destaque: #f26c2e;
+    --cor-recompensa: #1f8c61;
+    --cor-desconto: #c74747;
+    --cor-borda: #d1e0d9;
+
+    --fonte-titulo: "Fraunces", Georgia, serif;
+    --fonte-texto: "Plus Jakarta Sans", sans-serif;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 40px 48px;
+    font-family: var(--fonte-texto);
+    color: var(--cor-texto);
+    background: var(--cor-fundo);
+}
+
+h1, h2 {
+    font-family: var(--fonte-titulo);
+    color: var(--cor-marca);
+}
+
+label {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--cor-texto-suave);
+}
+
+input, select {
+    font-family: var(--fonte-texto);
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid var(--cor-borda);
+    background: var(--cor-superficie);
+    color: var(--cor-texto);
+}
+
+button {
+    font-family: var(--fonte-texto);
+    font-size: 14px;
+    font-weight: 700;
+    padding: 12px 18px;
+    margin-top: 12px;
+    margin-right: 8px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    background: var(--cor-marca);
+    color: #ffffff;
+}
+
+#botao-fechar,
+#botao-pagar {
+    background: transparent;
+    color: var(--cor-marca);
+    border: 1.5px solid var(--cor-marca);
+}
+
+#botao-adicionar-materia {
+    background: var(--cor-destaque);
+    color: var(--cor-texto);
+}
+
+#botao-resetar {
+    background: transparent;
+    color: var(--cor-desconto);
+    border: 1.5px solid var(--cor-desconto);
+}
+
+#mensagem-validacao,
+#mensagem-materia,
+#mensagem-config {
+    color: var(--cor-desconto);
+    font-size: 14px;
+}
+
+.secao {
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda);
+    padding: 28px 32px;
+    margin-top: 28px;
+}
+
+.secao h2 {
+    margin-top: 0;
+}
