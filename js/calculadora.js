@@ -189,6 +189,7 @@ botaoResetar.addEventListener("click", function (){
 
     bimestreAtual = "primeiro"
     selectBimestre.value = "primeiro"
+    marcarAbaAtiva();
     tituloBimestre.textContent = nomesBimestres.primeiro;
 
     localStorage.removeItem("sistemaRecompensa");
@@ -367,6 +368,9 @@ function montarCamposNotas() {
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
 
+        const linha = document.createElement("div");
+        linha.className = "linha-materia";
+
         const label = document.createElement("label");
         label.setAttribute("for", materia.id);
         label.textContent = materia.nome + ":";
@@ -380,14 +384,17 @@ function montarCamposNotas() {
 
         const botaoRemover = document.createElement("button");
         botaoRemover.type = "button";
-        botaoRemover.textContent = "Remover";
-        botaoRemover.addEventListener("click", function (){
+        botaoRemover.className = "botao-remover";
+        botaoRemover.textContent = "remover";
+        botaoRemover.addEventListener("click", function(){
             removerMateria(materia.id);
         });
 
-        listaNotasMaterias.appendChild(label);
-        listaNotasMaterias.appendChild(input);
-        listaNotasMaterias.appendChild(botaoRemover);
+        linha.appendChild(label);
+        linha.appendChild(input);
+        linha.appendChild(botaoRemover);
+        listaNotasMaterias.appendChild(linha);
+
     }
 }
 
@@ -529,7 +536,29 @@ selectBimestre.addEventListener("change", function(){
     }
     salvarDados();
     atualizarDashboard();
+    marcarAbaAtiva();
 });
+
+const abasBimestre = document.querySelectorAll(".aba-bimestre");
+
+function marcarAbaAtiva() {
+    for (let i = 0; i< abasBimestre.length; i++) {
+        const aba = abasBimestre[i];
+        if (aba.getAttribute("data-bimestre") === bimestreAtual) {
+            aba.classList.add("ativa");
+        } else {
+            aba.classList.remove("ativa");
+        }
+    }
+}
+
+for (let i = 0; i < abasBimestre.length; i++) {
+    abasBimestre[i].addEventListener("click", function (){
+        selectBimestre.value = this.getAttribute("data-bimestre");
+        selectBimestre.dispatchEvent(new Event("change"));
+        marcarAbaAtiva();
+    });
+}
 
 botaoAdicionarMateria.addEventListener("click", function (){
     mensagemMateria.textContent = "";
@@ -561,7 +590,9 @@ botaoAdicionarMateria.addEventListener("click", function (){
     inputNovaMateria.value = "";
     mensagemMateria.textContent = "Matéria adicionada.";
 })
+
 carregarDados();
+marcarAbaAtiva();
 montarCamposNotas();
 escreverNotasNaTela(bimestres[bimestreAtual].notas);
 

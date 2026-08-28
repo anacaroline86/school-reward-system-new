@@ -12,15 +12,29 @@
     <title>Sistema de Recompensa Escolar</title>
 </head>
 <body>
-    <label for="select-bimestre">Bimestre:</label>
-    <select id="select-bimestre">
-        <option value="primeiro">1º Bimestre</option>
-        <option value="segundo">2º Bimestre</option>
-        <option value="terceiro">3º Bimestre</option>
-        <option value="quarto">4º Bimestre</option>
-    </select>
+   <header class="cabecalho">
+        <div class="cabecalho-marca">
+            <h1 class="nome-marca">Recompensa Escolar</h1>
+            <p class="subtitulo-marca">Notas viram recompensa. Cada bimestre conta.</p>
+        </div>
 
-    <h1 id="titulo-bimestre">1º Bimestre</h1>
+        <div class="cabecalho-bimestre">
+            <select id="select-bimestre" hidden>
+                <option value="primeiro">1º Bimestre</option>
+                <option value="segundo">2º Bimestre</option>
+                <option value="terceiro">3º Bimestre</option>
+                <option value="quarto">4º Bimestre</option>
+            </select>
+            <p id="titulo-bimestre" class="pill-status">1º Bimestre</p>
+        </div>
+   </header>
+
+   <nav class="abas-bimestre">
+        <button type="button" class="aba-bimestre ativa" data-bimestre="primeiro">1º Bimestre</button>
+        <button type="button" class="aba-bimestre" data-bimestre="segundo">2º Bimestre</button>
+        <button type="button" class="aba-bimestre" data-bimestre="terceiro">3º Bimestre</button>
+        <button type="button" class="aba-bimestre " data-bimestre="quarto">4º Bimestre</button>
+   </nav>
 
     <section class="secao">
         <h2>Configurações - matérias</h2>
@@ -30,21 +44,33 @@
         <p id="mensagem-materia"></p>
     </section>
 
-    <section class="secao">
-        <div id="lista-notas-materias"></div>
-        <button id="botao-calcular">Calcular bimestre</button>
-        <p id="mensagem-validacao"></p>
-        <button id="botao-fechar">Fechar bimestre</button>
-        <button id="botao-pagar">Marcar como pago</button>
-        <p id="status-pagamento">Pagamento: -</p>
-        <p id="data-pagamento"></p>
-        <p id="status-bimestre">Status: Aberto</p>
-        <p id="data-fechamento"></p>
-        <p id="lista-valores"></p>
-        <p id="total-positivo"></p>
-        <p id="total-desconto"></p>
-        <p id="valor-bimestre"></p>
-    </section>
+    <div class="conteudo-bimestre">
+        <section class="secao secao-notas">
+            <h2>Notas Bimestre</h2>
+            <div id="lista-notas-materias"></div>
+            <button id="botao-calcular">Calcular bimestre</button>
+            <p id="mensagem-validacao"></p>
+        </section>
+
+
+        <section  class="secao secao-resultado">
+            <p class="rotulo-resultado">Valor do bimestre</p>
+            <p id="valor-bimestre"></p>
+            <p id="lista-valores"></p>
+            <p id="total-positivo"></p>
+            <p id="total-desconto"></p>
+
+            <p id="status-bimestre">Status: Aberto</p>
+            <p id="data-fechamento"></p>
+            <p id="status-pagamento">Pagamento: -</p>
+            <p id="data-pagamento"></p>
+
+            <div class="acoes-bimestre">
+                <button id="botao-fechar">Fechar bimestre</button>
+                <button id="botao-pagar">Marcar como pago</button>
+            </div>
+        </section>
+    </div>
 
     <section class="secao">
         <label for="config-valor-10">Nota 10:</label>
