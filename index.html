@@ -12,20 +12,147 @@
     <title>Sistema de Recompensa Escolar</title>
 </head>
 <body>
+    <section id="tela-acesso" class="tela-acesso" hidden>
+        <div class="acesso-formas" aria-hidden="true">
+            <span class="acesso-forma acesso-forma-1"></span>
+            <span class="acesso-forma acesso-forma-2"></span>
+            <span class="acesso-forma acesso-forma-3"></span>
+        </div>
+
+        <div class="acesso-icones-estudo" aria-hidden="true">
+            <!-- Livro aberto -->
+            <svg class="acesso-icone acesso-icone-livro" viewBox="0 0 64 64" fill="none">
+                <path d="M8 14c8-4 16-4 24 0v36c-8-4-16-4-24 0V14z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M56 14c-8-4-16-4-24 0v36c8-4 16-4 24 0V14z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M20 24h8M20 32h10M44 24h-8M44 32h-10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- Lápis -->
+            <svg class="acesso-icone acesso-icone-lapis" viewBox="0 0 64 64" fill="none">
+                <path d="M40 8l16 16-30 30H10V38L40 8z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M34 14l16 16M10 38l16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- Caderno -->
+            <svg class="acesso-icone acesso-icone-caderno" viewBox="0 0 64 64" fill="none">
+                <rect x="14" y="8" width="36" height="48" rx="4" stroke="currentColor" stroke-width="2.5"/>
+                <path d="M14 18h36M22 8v48M28 28h16M28 36h14M28 44h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- Régua -->
+            <svg class="acesso-icone acesso-icone-regua" viewBox="0 0 64 64" fill="none">
+                <rect x="10" y="24" width="44" height="16" rx="3" stroke="currentColor" stroke-width="2.5"/>
+                <path d="M18 24v8M26 24v5M34 24v8M42 24v5M50 24v8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- Estrela / medalha -->
+            <svg class="acesso-icone acesso-icone-estrela" viewBox="0 0 64 64" fill="none">
+                <path d="M32 8l6.5 13.2 14.5 2.1-10.5 10.2 2.5 14.5L32 41.2 19 48l2.5-14.5L11 23.3l14.5-2.1L32 8z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+            </svg>
+            <!-- Caneta -->
+            <svg class="acesso-icone acesso-icone-caneta" viewBox="0 0 64 64" fill="none">
+                <path d="M38 10l16 16-26 26H12V36L38 10z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M32 16l16 16" stroke="currentColor" stroke-width="2"/>
+                <circle cx="16" cy="48" r="3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <!-- Mochila / pasta escolar -->
+            <svg class="acesso-icone acesso-icone-pasta" viewBox="0 0 64 64" fill="none">
+                <rect x="10" y="20" width="44" height="32" rx="5" stroke="currentColor" stroke-width="2.5"/>
+                <path d="M24 20v-4a8 8 0 0 1 16 0v4M10 34h44" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+        </div>
+
+        <div class="acesso-conteudo">
+            <div class="cartao-acesso">
+                <h1 id="titulo-acesso" class="cartao-acesso-titulo">Recompensa Escolar</h1>
+                <p id="subtitulo-acesso" class="cartao-acesso-texto">Preencha os dados para criar o acesso do responsável.</p>
+
+                <div id="form-cadastro">
+                    <label for="acesso-nome">Nome</label>
+                    <input type="text" id="acesso-nome" autocomplete="name" placeholder="Seu nome">
+
+                    <label for="acesso-senha-cadastro">Senha</label>
+                    <input type="password" id="acesso-senha-cadastro" autocomplete="new-password" placeholder="Crie uma senha">
+
+                    <label for="acesso-senha-confirmar">Confirmar senha</label>
+                    <input type="password" id="acesso-senha-confirmar" autocomplete="new-password" placeholder="Repita a senha">
+
+                    <button type="button" id="botao-criar-conta">CRIAR ACESSO</button>
+                </div>
+
+                <div id="form-login" hidden>
+                    <label for="acesso-senha-login">Senha</label>
+                    <input type="password" id="acesso-senha-login" autocomplete="current-password" placeholder="Digite sua senha">
+
+                    <button type="button" id="botao-entrar">ENTRAR</button>
+                </div>
+
+                <p id="mensagem-acesso" class="mensagem"></p>
+                <p class="dica-acesso">Acesso local neste navegador. Não substitui um login na internet.</p>
+            </div>
+
+            <aside class="acesso-painel-direita">
+                <p id="titulo-painel-acesso" class="acesso-painel-texto">Bem-vindo <strong>de volta</strong></p>
+            </aside>
+        </div>
+
+        <div class="acesso-barra-inferior" aria-hidden="true"></div>
+    </section>
+
+    <div id="app-principal" hidden>
    <header class="cabecalho">
         <div class="cabecalho-marca">
-            <h1 class="nome-marca">Recompensa Escolar</h1>
+            <div class="cabecalho-titulo-linha">
+                <h1 class="nome-marca">Recompensa Escolar</h1>
+                <div class="cabecalho-bimestre">
+                    <select id="select-bimestre" hidden>
+                        <option value="primeiro">1º Bimestre</option>
+                        <option value="segundo">2º Bimestre</option>
+                        <option value="terceiro">3º Bimestre</option>
+                        <option value="quarto">4º Bimestre</option>
+                    </select>
+                    <p id="titulo-bimestre" class="pill-status">1º Bimestre</p>
+                </div>
+            </div>
             <p class="subtitulo-marca">Notas viram recompensa. Cada bimestre conta.</p>
         </div>
 
-        <div class="cabecalho-bimestre">
-            <select id="select-bimestre" hidden>
-                <option value="primeiro">1º Bimestre</option>
-                <option value="segundo">2º Bimestre</option>
-                <option value="terceiro">3º Bimestre</option>
-                <option value="quarto">4º Bimestre</option>
-            </select>
-            <p id="titulo-bimestre" class="pill-status">1º Bimestre</p>
+        <div class="cabecalho-acoes">
+            <div class="seletor-perfil">
+                <p class="seletor-perfil-rotulo">Perfis</p>
+                <div class="lista-avatares-perfis" id="lista-avatares-perfis"></div>
+            </div>
+
+            <div class="cabecalho-conta">
+                <div class="menu-config" id="menu-config">
+                    <button type="button" id="botao-config" class="botao-config" aria-expanded="false" aria-haspopup="true">
+                        Configurações
+                    </button>
+                    <div class="menu-config-painel" id="painel-config" hidden>
+                        <p class="menu-config-titulo">Conta</p>
+                        <p class="menu-config-dica">Edite, troque a senha ou exclua a conta deste navegador.</p>
+                        <button type="button" id="botao-abrir-editar-nome" class="botao-conta-menu">Editar nome</button>
+                        <button type="button" id="botao-abrir-trocar-senha" class="botao-conta-menu">Trocar senha</button>
+                        <button type="button" id="botao-abrir-excluir-conta" class="botao-conta-menu botao-excluir-conta">Excluir conta</button>
+
+                        <hr class="menu-config-divisor">
+
+                        <p class="menu-config-titulo">Backup</p>
+                        <p class="menu-config-dica">Guarde ou restaure os dados da conta.</p>
+                        <button type="button" id="botao-exportar">Exportar dados</button>
+                        <button type="button" id="botao-importar" class="botao-importar-menu">Importar dados</button>
+                        <input type="file" id="input-importar" accept=".json,application/json" hidden>
+                        <p id="mensagem-backup" class="mensagem"></p>
+
+                        <hr class="menu-config-divisor">
+
+                        <p class="menu-config-titulo">Zerar dados</p>
+                        <p class="menu-config-dica">Só neste perfil. Não apaga outros perfis nem a conta.</p>
+                        <button type="button" id="botao-resetar-bimestre" class="botao-reset">Zerar bimestre atual</button>
+                        <button type="button" id="botao-resetar-bimestres" class="botao-reset">Zerar todos os bimestres</button>
+                        <button type="button" id="botao-resetar-perfil" class="botao-reset botao-reset-forte">Zerar perfil inteiro</button>
+                        <p id="mensagem-reset" class="mensagem"></p>
+                    </div>
+                </div>
+
+                <button type="button" id="botao-sair" class="botao-sair">Sair</button>
+            </div>
         </div>
    </header>
 
@@ -33,36 +160,118 @@
         <button type="button" class="aba-bimestre ativa" data-bimestre="primeiro">1º Bimestre</button>
         <button type="button" class="aba-bimestre" data-bimestre="segundo">2º Bimestre</button>
         <button type="button" class="aba-bimestre" data-bimestre="terceiro">3º Bimestre</button>
-        <button type="button" class="aba-bimestre " data-bimestre="quarto">4º Bimestre</button>
+        <button type="button" class="aba-bimestre" data-bimestre="quarto">4º Bimestre</button>
    </nav>
 
-    <section class="secao">
-        <h2>Configurações - matérias</h2>
-        <label for="nova-materia">Nome da matéria:</label>
-        <input type="text" id="nova-materia">
-        <button id="botao-adicionar-materia">Adicionar matéria</button>
-        <p id="mensagem-materia"></p>
-    </section>
+    <div id="modal-perfil" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-perfil" aria-modal="true">
+            <h3 id="titulo-modal-perfil">Adicionar perfil</h3>
+            <p id="dica-modal-perfil" class="dica-modal">Cada perfil tem matérias, notas e valores separados.</p>
+            <input type="text" id="input-modal-perfil" placeholder="Nome do perfil">
+            <p id="mensagem-modal-perfil" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-perfil">Cancelar</button>
+                <button type="button" id="botao-confirmar-modal-perfil">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-materia" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-materia" aria-modal="true">
+            <h3 id="titulo-modal-materia">Adicionar matéria</h3>
+            <input type="text" id="input-modal-materia" placeholder="Nome da matéria">
+            <p id="mensagem-modal-materia" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-materia">Cancelar</button>
+                <button type="button" id="botao-confirmar-modal-materia">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-senha" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-senha" aria-modal="true">
+            <h3 id="titulo-modal-senha">Trocar senha</h3>
+            <p class="dica-modal">Digite a senha atual e escolha a nova.</p>
+
+            <label for="senha-atual">Senha atual</label>
+            <input type="password" id="senha-atual" autocomplete="current-password">
+
+            <label for="senha-nova">Nova senha</label>
+            <input type="password" id="senha-nova" autocomplete="new-password">
+
+            <label for="senha-nova-confirmar">Confirmar nova senha</label>
+            <input type="password" id="senha-nova-confirmar" autocomplete="new-password">
+
+            <p id="mensagem-modal-senha" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-senha">Cancelar</button>
+                <button type="button" id="botao-confirmar-modal-senha">Salvar senha</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-nome-responsavel" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-nome-responsavel" aria-modal="true">
+            <h3 id="titulo-modal-nome-responsavel">Editar nome</h3>
+            <p class="dica-modal">Atualize o nome do responsável.</p>
+            <label for="input-nome-responsavel">Nome</label>
+            <input type="text" id="input-nome-responsavel" autocomplete="name">
+            <p id="mensagem-modal-nome-responsavel" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-nome">Cancelar</button>
+                <button type="button" id="botao-confirmar-modal-nome">Salvar nome</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-excluir-conta" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-excluir-conta" aria-modal="true">
+            <h3 id="titulo-modal-excluir-conta">Excluir conta</h3>
+            <p class="dica-modal">Isso apaga a conta, os perfis e todas as notas deste navegador. Depois disso, outra pessoa pode se cadastrar.</p>
+            <p class="dica-modal">Se quiser guardar os dados, exporte o backup antes.</p>
+            <label for="senha-excluir-conta">Digite sua senha para confirmar</label>
+            <input type="password" id="senha-excluir-conta" autocomplete="current-password">
+            <p id="mensagem-modal-excluir-conta" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-excluir-conta">Cancelar</button>
+                <button type="button" id="botao-confirmar-excluir-conta" class="botao-confirmar-perigo">Excluir conta</button>
+            </div>
+        </div>
+    </div>
 
     <div class="conteudo-bimestre">
         <section class="secao secao-notas">
-            <h2>Notas Bimestre</h2>
+            <div class="secao-cabecalho-linha">
+                <h2>Notas do bimestre</h2>
+                <div class="acoes-notas">
+                    <button type="button" id="botao-adicionar-materia-notas" class="botao-secundario">+ Nova matéria</button>
+                    <button type="button" id="botao-ordenar-materias" class="botao-secundario">Ordenar A-Z</button>
+                    <button type="button" id="botao-duplicar-notas" class="botao-secundario">Copiar do bimestre anterior</button>
+                </div>
+            </div>
             <div id="lista-notas-materias"></div>
             <button id="botao-calcular">Calcular bimestre</button>
-            <p id="mensagem-validacao"></p>
+            <p id="mensagem-validacao" class="mensagem"></p>
         </section>
 
 
         <section  class="secao secao-resultado">
             <p class="rotulo-resultado">Valor do bimestre</p>
             <p id="valor-bimestre"></p>
+            
+            <p id="status-bimestre">Status: Aberto</p>
             <p id="lista-valores"></p>
             <p id="total-positivo"></p>
             <p id="total-desconto"></p>
 
-            <p id="status-bimestre">Status: Aberto</p>
+
             <p id="data-fechamento"></p>
-            <p id="status-pagamento">Pagamento: -</p>
+            <p id="status-pagamento">Pagamento: </p>
             <p id="data-pagamento"></p>
 
             <div class="acoes-bimestre">
@@ -73,43 +282,106 @@
     </div>
 
     <section class="secao">
-        <label for="config-valor-10">Nota 10:</label>
-        <input type="number" id="config-valor-10" step="1">
+        <h2>Valores por nota</h2>
 
-        <label for="config-valor-9">Nota 9:</label>
-        <input type="number" id="config-valor-9" step="1">
+        <p class="dica-valores">Campos começam vazios. Digite o valor (use - para desconto). “Menor que 5” vale para notas de 0 a 4,9.</p>
 
-        <label for="config-valor-8">Nota 8:</label>
-        <input type="number" id="config-valor-8" step="1">
+        <div class="grade-valores">
+            <div class="campo-valor">
+                <label for="config-valor-10">Nota 10:</label>
+                <input type="number" id="config-valor-10" step="1">
+            </div>
 
-        <label for="config-valor-7">Nota 7:</label>
-        <input type="number" id="config-valor-7" step="1">
+            <div class="campo-valor">
+                <label for="config-valor-9">Nota 9:</label>
+                <input type="number" id="config-valor-9" step="1">
+            </div>
 
-        <label for="config-valor-6">Nota 6:</label>
-        <input type="number" id="config-valor-6" step="1">
+            <div class="campo-valor">
 
-        <label for="config-valor-5">Nota 5:</label>
-        <input type="number" id="config-valor-5" step="1">
+                <label for="config-valor-8">Nota 8:</label>
+                <input type="number" id="config-valor-8" step="1">
+            </div>
 
-        <button id="botao-salvar-valores">Salvar valores</button>
-        <p id="mensagem-config"></p>
+            <div class="campo-valor">
+                <label for="config-valor-7">Nota 7:</label>
+                <input type="number" id="config-valor-7" step="1">
+            </div>
+
+            <div class="campo-valor">
+                <label for="config-valor-6">Nota 6:</label>
+                <input type="number" id="config-valor-6" step="1">
+            </div>     
+
+            <div class="campo-valor">
+                <label for="config-valor-5">Nota 5:</label>
+                <input type="number" id="config-valor-5" step="1">
+            </div>
+
+            <div class="campo-valor">
+                <label for="config-valor-menor-5">Menor que 5:</label>
+                <input type="number" id="config-valor-menor-5" step="1">
+            </div>
+        </div>
+
+        <div class="acoes-valores">
+            <button type="button" id="botao-salvar-valores">Salvar valores</button>
+            <button type="button" id="botao-editar-valores" hidden>Editar valores</button>
+        </div>
+        <p id="mensagem-config" class="mensagem"></p>
     </section>
 
-    <section class="secao">
-        <h2>Resumo do bimestre</h2>
-        <p id="dashboard-notas-cadastradas"></p>
-        <p id="dashboard-notas-acima"></p>
-        <p id="dashboard-notas-abaixo"></p>
-
+    <section class="secao secao-relatorio">
+        <div class="secao-cabecalho-linha">
+            <h2>Resumo do bimestre</h2>
+            <div class="acoes-relatorio">
+                <button type="button" id="botao-imprimir-bimestre" class="botao-secundario">Imprimir bimestre</button>
+                <button type="button" id="botao-imprimir-ano" class="botao-secundario">Imprimir ano</button>
+            </div>
+        </div>
+        <div class="grade-resumo">
+            <div class="card-resumo card-resumo-menta">
+                <p class="card-resumo-rotulo">Notas cadastradas</p>
+                <p id="dashboard-notas-cadastradas" class="card-resumo-valor">0/0</p>
+            </div>
+            <div class="card-resumo card-resumo-menta">
+                <p class="card-resumo-rotulo">Notas maiores ou iguais a 8</p>
+                <p id="dashboard-notas-acima" class="card-resumo-valor">0</p>
+            </div>
+            <div class="card-resumo card-resumo-menta">
+                <p class="card-resumo-rotulo">Notas menores que 8</p>
+                <p id="dashboard-notas-abaixo" class="card-resumo-valor">0</p>
+            </div>
+        </div>
+    
         <h2>Resumo do ano</h2>
-        <p id="dashboard-primeiro"></p>
-        <p id="dashboard-segundo"></p>
-        <p id="dashboard-terceiro"></p>
-        <p id="dashboard-quarto"></p>
-        <p id="dashboard-total-pago"></p>
+        <div class="grade-resumo">
+            <div class="card-resumo">
+                <p class="card-resumo-rotulo">1º Bimestre</p>
+                <p id="dashboard-primeiro" class="card-resumo-valor">R$ 0</p>
+                <p id="dashboard-primeiro-status" class="card-resumo-status">Aberto</p>
+            </div>
+            <div class="card-resumo">
+                <p class="card-resumo-rotulo">2º Bimestre</p>
+                <p id="dashboard-segundo" class="card-resumo-valor">R$ 0</p>
+                <p id="dashboard-segundo-status" class="card-resumo-status">Aberto</p>
+            </div>
+            <div class="card-resumo">
+                <p class="card-resumo-rotulo">3º Bimestre</p>
+                <p id="dashboard-terceiro" class="card-resumo-valor">R$ 0</p>
+                <p id="dashboard-terceiro-status" class="card-resumo-status">Aberto</p>
+            </div>
+            <div class="card-resumo">
+                <p class="card-resumo-rotulo">4º Bimestre</p>
+                <p id="dashboard-quarto" class="card-resumo-valor">R$ 0</p>
+                <p id="dashboard-quarto-status" class="card-resumo-status">Aberto</p>
+            </div>
+        </div>
+        <p id="dashboard-total-pago" class="total-pago">Total já pago: R$ 0</p>
     </section>
 
-    <button id="botao-resetar">Zerar todos os dados</button>
+    <div id="area-relatorio" class="area-relatorio" hidden></div>
+    </div>
 
     <script src="js/calculadora.js"></script>
 </body>
