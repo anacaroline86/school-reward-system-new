@@ -74,6 +74,7 @@ const totalPositivoE1 = document.getElementById("total-positivo");
 const totalDescontosE1 = document.getElementById("total-desconto");
 const valorBimestreE1 = document.getElementById("valor-bimestre");
 const botaoFechar = document.getElementById("botao-fechar");
+const botaoReabrir = document.getElementById("botao-reabrir");
 const statusBimestre = document.getElementById("status-bimestre");
 const dataFechamento = document.getElementById("data-fechamento");
 const botaoPagar = document.getElementById("botao-pagar");
@@ -222,11 +223,75 @@ function escreverNotasNaTela(notas) {
         const materia = materias[i];
         const input = document.getElementById(materia.id);
 
+        if (!input) {
+            continue;
+        }
+
         if (notas[materia.id] !== undefined) {
             input.value = notas[materia.id];
         } else {
             input.value = "";
         }
+    }
+
+    atualizarTodosPreviewsNotas();
+}
+
+function formatarValorNotaPreview(textoNota) {
+    if (!valoresEstaoConfigurados()) {
+        return { texto: "—", tipo: "" };
+    }
+
+    if (textoNota === "" || textoNota === undefined || textoNota === null) {
+        return { texto: "—", tipo: "" };
+    }
+
+    const nota = Number(textoNota);
+
+    if (Number.isNaN(nota) || nota < 0 || nota > 10) {
+        return { texto: "—", tipo: "" };
+    }
+
+    const valor = calcularValorDaNota(nota);
+
+    if (typeof valor !== "number") {
+        return { texto: "—", tipo: "" };
+    }
+
+    if (valor > 0) {
+        return { texto: "+R$ " + valor, tipo: "positivo" };
+    }
+
+    if (valor < 0) {
+        return { texto: "-R$ " + Math.abs(valor), tipo: "negativo" };
+    }
+
+    return { texto: "R$ 0", tipo: "" };
+}
+
+function atualizarPreviewValorNota(input) {
+    if (!input) {
+        return;
+    }
+
+    const span = input.parentElement.querySelector(".valor-nota-linha");
+
+    if (!span) {
+        return;
+    }
+
+    const preview = formatarValorNotaPreview(input.value);
+    span.textContent = preview.texto;
+    span.classList.remove("positivo", "negativo");
+
+    if (preview.tipo) {
+        span.classList.add(preview.tipo);
+    }
+}
+
+function atualizarTodosPreviewsNotas() {
+    for (let i = 0; i < materias.length; i++) {
+        atualizarPreviewValorNota(document.getElementById(materias[i].id));
     }
 }
 
@@ -266,23 +331,37 @@ function limparResultados() {
 function bloquearCampos(bloquear) {
     for (let i = 0; i < materias.length; i++) {
         const input = document.getElementById(materias[i].id);
-        input.disabled = bloquear;
+
+        if (input) {
+            input.disabled = bloquear;
+        }
     }
 
-botaoCalcular.disabled = bloquear;
-botaoFechar.disabled = bloquear;
+    const botoesRemover = document.querySelectorAll(".botao-remover");
 
+    for (let i = 0; i < botoesRemover.length; i++) {
+        botoesRemover[i].disabled = bloquear;
+    }
+
+    botaoCalcular.disabled = bloquear;
+    botaoFechar.disabled = bloquear;
+    botaoAdicionarMateriaNotas.disabled = bloquear;
+    botaoOrdenarMaterias.disabled = bloquear;
+    botaoDuplicarNotas.disabled = bloquear;
 }
 
 function atualizarStatusNaTela(bimestre) {
-
-    if(bimestre.pago) {
+    if (bimestre.pago) {
         statusBimestre.textContent = "Status: Fechado";
         dataFechamento.textContent = "Fechado em: " + bimestre.dataFechamento;
         statusPagamento.textContent = "Pagamento: Pago";
         dataPagamento.textContent = "Pago em: " + bimestre.dataPagamento;
         bloquearCampos(true);
         botaoPagar.disabled = true;
+        botaoPagar.hidden = true;
+        botaoFechar.hidden = true;
+        botaoReabrir.hidden = false;
+        botaoReabrir.disabled = false;
     } else if (bimestre.fechado) {
         statusBimestre.textContent = "Status: Fechado";
         dataFechamento.textContent = "Fechado em: " + bimestre.dataFechamento;
@@ -290,6 +369,10 @@ function atualizarStatusNaTela(bimestre) {
         dataPagamento.textContent = "";
         bloquearCampos(true);
         botaoPagar.disabled = false;
+        botaoPagar.hidden = false;
+        botaoFechar.hidden = true;
+        botaoReabrir.hidden = false;
+        botaoReabrir.disabled = false;
     } else {
         statusBimestre.textContent = "Status: Aberto";
         dataFechamento.textContent = "";
@@ -297,7 +380,11 @@ function atualizarStatusNaTela(bimestre) {
         dataPagamento.textContent = "";
         bloquearCampos(false);
         botaoPagar.disabled = true;
+        botaoPagar.hidden = false;
+        botaoFechar.hidden = false;
+        botaoReabrir.hidden = true;
     }
+
     atualizarPillStatus();
 }
 
@@ -775,6 +862,7 @@ botaoSalvarValores.addEventListener("click", function(){
 
     salvarDados();
     definirModoEdicaoValores(false);
+    atualizarTodosPreviewsNotas();
     mostrarMensagem(mensagemConfig, "Valores salvos.", "sucesso");
 });
 
@@ -911,7 +999,8 @@ function montarCamposNotas() {
 
     if (materias.length === 0) {
         const textoVazio = document.createElement("p");
-        textoVazio.textContent = "Nenhuma matéria cadastrada";
+        textoVazio.className = "texto-vazio";
+        textoVazio.textContent = "Nenhuma matéria cadastrada. Use + Nova matéria para começar.";
         listaNotasMaterias.appendChild(textoVazio);
         return;
     }
@@ -932,20 +1021,27 @@ function montarCamposNotas() {
         input.min = "0";
         input.max = "10";
         input.step = "0.1";
+        input.addEventListener("input", function () {
+            atualizarPreviewValorNota(input);
+        });
+
+        const valorLinha = document.createElement("span");
+        valorLinha.className = "valor-nota-linha";
+        valorLinha.textContent = "—";
 
         const botaoRemover = document.createElement("button");
         botaoRemover.type = "button";
         botaoRemover.className = "botao-remover";
         botaoRemover.textContent = "Remover";
-        botaoRemover.addEventListener("click", function(){
+        botaoRemover.addEventListener("click", function () {
             removerMateria(materia.id);
         });
 
         linha.appendChild(label);
         linha.appendChild(input);
+        linha.appendChild(valorLinha);
         linha.appendChild(botaoRemover);
         listaNotasMaterias.appendChild(linha);
-
     }
 }
 
@@ -1057,10 +1153,16 @@ botaoCalcular.addEventListener("click", function(){
     atualizarDashboard();
 });
 
-botaoFechar.addEventListener("click", function (){
-    const confirmou = confirm("Depois de fechar o bimestre as notas não poderão mais ser alteradas. Deseja continuar?");
+botaoFechar.addEventListener("click", function () {
+    const bimestre = bimestres[bimestreAtual];
+    const valorAtual = typeof bimestre.valorTotal === "number" ? bimestre.valorTotal : 0;
+    const confirmou = confirm(
+        "Fechar " + nomesBimestres[bimestreAtual] + "?\n\n" +
+        "Valor do bimestre: R$ " + valorAtual + "\n\n" +
+        "Depois de fechar, as notas não poderão ser alteradas até reabrir."
+    );
 
-    if(!confirmou){
+    if (!confirmou) {
         return;
     }
 
@@ -1071,19 +1173,63 @@ botaoFechar.addEventListener("click", function (){
     atualizarStatusNaTela(bimestres[bimestreAtual]);
     salvarDados();
     atualizarDashboard();
+    mostrarMensagem(mensagemValidacao, "Bimestre fechado.", "sucesso");
+});
+
+botaoReabrir.addEventListener("click", function () {
+    const bimestre = bimestres[bimestreAtual];
+    let mensagem =
+        "Reabrir " + nomesBimestres[bimestreAtual] + "?\n\n" +
+        "As notas voltarão a poder ser editadas.";
+
+    if (bimestre.pago) {
+        mensagem =
+            "Reabrir " + nomesBimestres[bimestreAtual] + "?\n\n" +
+            "Isso também desfaz o pagamento marcado.\n" +
+            "As notas voltarão a poder ser editadas.";
+    }
+
+    const confirmou = confirm(mensagem);
+
+    if (!confirmou) {
+        return;
+    }
+
+    bimestres[bimestreAtual].fechado = false;
+    bimestres[bimestreAtual].dataFechamento = null;
+    bimestres[bimestreAtual].pago = false;
+    bimestres[bimestreAtual].dataPagamento = null;
+
+    atualizarStatusNaTela(bimestres[bimestreAtual]);
+    salvarDados();
+    atualizarDashboard();
+    mostrarMensagem(mensagemValidacao, "Bimestre reaberto.", "sucesso");
 });
 
 botaoPagar.addEventListener("click", function () {
-    if (!bimestres[bimestreAtual].fechado) {
+    const bimestre = bimestres[bimestreAtual];
+
+    if (!bimestre.fechado) {
         alert("O bimestre precisa estar fechado para marcar o pagamento.");
         return;
     }
-    
+
+    const valorAtual = typeof bimestre.valorTotal === "number" ? bimestre.valorTotal : 0;
+    const confirmou = confirm(
+        "Marcar " + nomesBimestres[bimestreAtual] + " como pago?\n\n" +
+        "Valor a pagar: R$ " + valorAtual
+    );
+
+    if (!confirmou) {
+        return;
+    }
+
     bimestres[bimestreAtual].pago = true;
     bimestres[bimestreAtual].dataPagamento = new Date().toLocaleDateString("pt-BR");
     atualizarStatusNaTela(bimestres[bimestreAtual]);
     salvarDados();
     atualizarDashboard();
+    mostrarMensagem(mensagemValidacao, "Pagamento registrado.", "sucesso");
 });
 
 selectBimestre.addEventListener("change", function(){

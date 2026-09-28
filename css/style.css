@@ -397,6 +397,22 @@ button {
     border-radius: 10px;
 }
 
+.valor-nota-linha {
+    min-width: 72px;
+    text-align: right;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--cor-texto-suave);
+}
+
+.valor-nota-linha.positivo {
+    color: var(--cor-recompensa);
+}
+
+.valor-nota-linha.negativo {
+    color: var(--cor-desconto);
+}
+
 .botao-remover {
     margin: 0;
     margin-left: 8px;
@@ -407,6 +423,11 @@ button {
     font-weight: 500;
     font-size: 13px;
     cursor: pointer;
+}
+
+.botao-remover:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .texto-vazio {
@@ -430,6 +451,16 @@ button {
 
 .acoes-bimestre button {
     margin-top: 0;
+}
+
+#botao-reabrir {
+    background: transparent;
+    color: #ffffff;
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+}
+
+#botao-reabrir:hover {
+    background: rgba(255, 255, 255, 0.12);
 }
 
 .conteudo-bimestre {
@@ -511,7 +542,8 @@ button {
 }
 
 .secao-resultado #botao-fechar,
-.secao-resultado #botao-pagar {
+.secao-resultado #botao-pagar,
+.secao-resultado #botao-reabrir {
     background: transparent;
     color: #ffffff;
     border: 1.5px solid #ffffff;
@@ -1009,18 +1041,31 @@ button {
 }
 
 @media (max-width: 900px) {
+    body {
+        padding: 20px 16px;
+    }
+
     .cabecalho {
         flex-direction: column;
         align-items: stretch;
+        padding: 20px 16px;
+        gap: 16px;
     }
 
     .cabecalho-acoes {
         flex-direction: column;
         align-items: stretch;
+        gap: 12px;
+    }
+
+    .nome-marca {
+        font-size: 28px;
     }
 
     .seletor-perfil {
         justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
     }
 
     .cabecalho-conta {
@@ -1040,6 +1085,64 @@ button {
         right: auto;
         left: 0;
         width: 100%;
+    }
+
+    .abas-bimestre {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .aba-bimestre {
+        flex: 0 0 auto;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .secao-cabecalho-linha {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .acoes-notas {
+        width: 100%;
+    }
+
+    .acoes-notas .botao-secundario {
+        flex: 1 1 calc(50% - 8px);
+        text-align: center;
+    }
+
+    .linha-materia {
+        flex-wrap: wrap;
+        gap: 10px 12px;
+    }
+
+    .linha-materia label {
+        flex: 1 1 100%;
+    }
+
+    .linha-materia input {
+        width: 88px;
+    }
+
+    .valor-nota-linha {
+        margin-right: auto;
+    }
+
+    .conteudo-bimestre {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .secao-resultado {
+        width: 100%;
+    }
+
+    .grade-valores {
+        grid-template-columns: repeat(2, 1fr);
     }
 }
 
