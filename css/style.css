@@ -362,44 +362,71 @@ button {
 #lista-notas-materias {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
     margin-top: 16px;
 }
 
+.lista-notas-cabecalho,
 .linha-materia {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) 88px 88px 72px;
     align-items: center;
-    gap: 16px;
-    padding: 14px 16px;
+    gap: 12px;
+    padding: 12px 16px;
+}
+
+.lista-notas-cabecalho {
+    padding-bottom: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--cor-texto-suave);
+}
+
+.lista-notas-cabecalho span:nth-child(2),
+.lista-notas-cabecalho span:nth-child(3) {
+    text-align: center;
+}
+
+.linha-materia {
     border: 1px solid var(--cor-borda);
     border-radius: 12px;
+    background: #f9fcfa;
+}
+
+.linha-materia:hover {
+    border-color: #b7d0c6;
     background: var(--cor-superficie);
 }
 
 .linha-materia label {
     margin: 0;
-    flex: 1;
-    color:  var(--cor-texto);
+    color: var(--cor-texto);
     font-weight: 700;
     font-size: 15px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .linha-materia input {
-    width: 72px;
+    width: 100%;
     text-align: center;
     margin: 0;
-    padding: 10px 12px;
+    padding: 10px 8px;
     font-weight: 700;
     font-size: 16px;
     color: var(--cor-marca);
-    background: #f5faf7;
+    background: var(--cor-superficie);
     border: 1px solid var(--cor-borda);
     border-radius: 10px;
 }
 
 .valor-nota-linha {
-    min-width: 72px;
-    text-align: right;
+    min-width: 0;
+    text-align: center;
     font-size: 14px;
     font-weight: 700;
     color: var(--cor-texto-suave);
@@ -415,7 +442,6 @@ button {
 
 .botao-remover {
     margin: 0;
-    margin-left: 8px;
     padding: 0;
     background: transparent;
     color: var(--cor-desconto);
@@ -423,6 +449,7 @@ button {
     font-weight: 500;
     font-size: 13px;
     cursor: pointer;
+    justify-self: end;
 }
 
 .botao-remover:disabled {
@@ -430,9 +457,36 @@ button {
     cursor: not-allowed;
 }
 
+.aviso-painel {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #fff6ef;
+    border: 1px solid #f2d2b8;
+    color: #8a4b22;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.aviso-painel strong {
+    font-weight: 700;
+}
+
+.dica-resultado {
+    margin: 0 0 12px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: #d1f5e8;
+}
+
 .texto-vazio {
     color: var(--cor-texto-suave);
-    margin: 0;
+    margin: 8px 0 0;
+    padding: 20px 16px;
+    text-align: center;
+    border: 1px dashed var(--cor-borda);
+    border-radius: 12px;
+    background: #f9fcfa;
 }
 
 #botao-calcular {
@@ -547,6 +601,53 @@ button {
     background: transparent;
     color: #ffffff;
     border: 1.5px solid #ffffff;
+}
+
+.linha-ano-letivo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    margin-top: 12px;
+}
+
+.linha-ano-letivo label {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cor-texto-suave);
+}
+
+.linha-ano-letivo select {
+    margin: 0;
+    min-width: 110px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--cor-borda);
+    background: var(--cor-superficie);
+    font: inherit;
+    color: var(--cor-texto);
+}
+
+.linha-ano-letivo .botao-secundario {
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.rotulo-checkbox {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.rotulo-checkbox input {
+    width: auto !important;
+    margin: 3px 0 0;
+    flex-shrink: 0;
 }
 
 .cabecalho {
@@ -1116,20 +1217,30 @@ button {
     }
 
     .linha-materia {
-        flex-wrap: wrap;
-        gap: 10px 12px;
+        grid-template-columns: minmax(0, 1fr) 72px 72px auto;
+        gap: 8px 10px;
+        padding: 12px;
+    }
+
+    .lista-notas-cabecalho {
+        display: none;
     }
 
     .linha-materia label {
-        flex: 1 1 100%;
+        grid-column: 1 / -1;
+        white-space: normal;
     }
 
     .linha-materia input {
-        width: 88px;
+        width: 100%;
     }
 
     .valor-nota-linha {
-        margin-right: auto;
+        text-align: left;
+    }
+
+    .botao-remover {
+        justify-self: start;
     }
 
     .conteudo-bimestre {
@@ -1141,9 +1252,6 @@ button {
         width: 100%;
     }
 
-    .grade-valores {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 .nome-marca {
@@ -1154,6 +1262,15 @@ button {
     line-height: 1;
     display: flex;
     align-items: center;
+}
+
+.nome-marca-completo {
+    margin: 6px 0 0;
+    font-family: var(--fonte-titulo);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--cor-marca);
+    line-height: 1.2;
 }
 
 .subtitulo-marca {
@@ -1210,34 +1327,95 @@ button {
 
 .grade-valores {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
 }
 
-.campo-valor{
-display: flex;
-flex-direction: column;
-gap: 8px;
-padding: 12px;
-border-radius: 12px;
-background: #f5faf7;
+.grade-valores[hidden],
+.dica-valores[hidden],
+.acoes-valores[hidden] {
+    display: none !important;
 }
 
-.campo-valor label{
+.campo-valor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 16px;
+    border-radius: 14px;
+    background: #f5faf7;
+    min-width: 0;
+}
+
+.campo-valor-desconto {
+    background: #fdf5f5;
+}
+
+.campo-valor label {
     margin: 0;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--cor-texto-suave);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--cor-texto);
+}
+
+.campo-valor-com-prefixo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 14px;
+    border: 1px solid var(--cor-borda);
+    border-radius: 12px;
+    background: var(--cor-superficie);
+}
+
+.prefixo-desconto {
+    flex-shrink: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--cor-desconto);
+    line-height: 1;
 }
 
 .campo-valor input {
     width: 100%;
-    text-align:  center;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.campo-valor-com-prefixo input {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    padding-left: 2px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.campo-valor-com-prefixo input:focus {
+    outline: none;
+}
+
+.campo-valor-com-prefixo:focus-within {
+    outline: 2px solid rgba(13, 107, 92, 0.25);
+    outline-offset: 1px;
+    border-color: var(--cor-marca);
 }
 
 @media (max-width: 900px) {
     .grade-valores {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .campo-valor {
+        padding: 14px 12px;
     }
 }
 
@@ -1245,6 +1423,31 @@ background: #f5faf7;
     margin: 0 0 16px;
     font-size:  13px;
     color:  var(--cor-texto-suave);
+}
+
+.config-limite-recompensa {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin: 0 0 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #f5faf7;
+    border: 1px solid var(--cor-borda);
+}
+
+.config-limite-recompensa label {
+    margin: 0;
+    font-weight: 700;
+    color: var(--cor-texto);
+}
+
+.config-limite-recompensa select {
+    min-width: 88px;
+    margin: 0;
+    font-weight: 700;
+    color: var(--cor-marca);
 }
 
 .form-materia {

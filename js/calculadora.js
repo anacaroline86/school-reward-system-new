@@ -5,49 +5,54 @@ const valoresPorNota = {
     7: null,
     6: null,
     5: null,
-    menorQue5: null
+    4: null,
+    3: null,
+    2: null,
+    1: null
 };
+
+const FAIXAS_NOTA = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
 
 function calcularValorDaNota(nota) {
     const faixa = Math.floor(nota);
 
-    if (faixa < 5) {
-        return valoresPorNota.menorQue5;
+    // Nota menor que 1 não tem preço: perde o bimestre inteiro.
+    if (faixa < 1) {
+        return null;
     }
 
     return valoresPorNota[faixa];
 }
 
-function valoresEstaoConfigurados() {
-    const faixas = [10, 9, 8, 7, 6, 5];
+function notaEhMenorQue1(nota) {
+    return Number(nota) < 1;
+}
 
-    for (let i = 0; i < faixas.length; i++) {
-        if (typeof valoresPorNota[faixas[i]] !== "number") {
+function valoresEstaoConfigurados() {
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        if (typeof valoresPorNota[FAIXAS_NOTA[i]] !== "number") {
             return false;
         }
-    }
-
-    if (typeof valoresPorNota.menorQue5 !== "number") {
-        return false;
     }
 
     return true;
 }
 
 function limparValoresPorNota() {
-    valoresPorNota[10] = null;
-    valoresPorNota[9] = null;
-    valoresPorNota[8] = null;
-    valoresPorNota[7] = null;
-    valoresPorNota[6] = null;
-    valoresPorNota[5] = null;
-    valoresPorNota.menorQue5 = null;
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        valoresPorNota[FAIXAS_NOTA[i]] = null;
+    }
 }
 let materias = [];
 let perfis = [];
 let perfilAtualId = null;
 let responsavel = null;
 let modoModalPerfil = "criar";
+let notaInicioDesconto = null;
+let anosLetivos = {};
+let anoLetivoAtual = String(new Date().getFullYear());
+
+const VERSAO_DADOS = 3;
 
 const CHAVE_SESSAO = "sessaoResponsavel";
 const nomesBimestres = {
@@ -87,23 +92,24 @@ const dashboardTerceiroStatus = document.getElementById("dashboard-terceiro-stat
 const dashboardQuartoStatus = document.getElementById("dashboard-quarto-status");
 const dashboardNotasAcima = document.getElementById("dashboard-notas-acima");
 const dashboardNotasAbaixo = document.getElementById("dashboard-notas-abaixo");
+const rotuloNotasAcima = document.getElementById("rotulo-notas-acima");
+const rotuloNotasAbaixo = document.getElementById("rotulo-notas-abaixo");
 const dashboardPrimeiro = document.getElementById("dashboard-primeiro");
 const dashboardSegundo = document.getElementById("dashboard-segundo");
 const dashboardTerceiro = document.getElementById("dashboard-terceiro");
 const dashboardQuarto = document.getElementById("dashboard-quarto");
 const dashboardTotalPago = document.getElementById("dashboard-total-pago");
 const mensagemValidacao = document.getElementById("mensagem-validacao");
-const configValor10 = document.getElementById("config-valor-10");
-const configValor9 = document.getElementById("config-valor-9");
-const configValor8 = document.getElementById("config-valor-8");
-const configValor7 = document.getElementById("config-valor-7");
-const configValor6 = document.getElementById("config-valor-6");
-const configValor5 = document.getElementById("config-valor-5");
-const configValorMenor5 = document.getElementById("config-valor-menor-5");
+const selectInicioDesconto = document.getElementById("select-inicio-desconto");
+const dicaValores = document.getElementById("dica-valores");
+const gradeValores = document.getElementById("grade-valores");
+const acoesValores = document.getElementById("acoes-valores");
 const botaoSalvarValores = document.getElementById("botao-salvar-valores");
 const botaoEditarValores = document.getElementById("botao-editar-valores");
 const mensagemConfig = document.getElementById("mensagem-config");
 const listaNotasMaterias = document.getElementById("lista-notas-materias");
+const avisoValoresNotas = document.getElementById("aviso-valores-notas");
+const dicaResultado = document.getElementById("dica-resultado");
 const modalMateria = document.getElementById("modal-materia");
 const inputModalMateria = document.getElementById("input-modal-materia");
 const mensagemModalMateria = document.getElementById("mensagem-modal-materia");
@@ -140,6 +146,14 @@ const botaoExportar = document.getElementById("botao-exportar");
 const botaoImportar = document.getElementById("botao-importar");
 const inputImportar = document.getElementById("input-importar");
 const mensagemBackup = document.getElementById("mensagem-backup");
+const selectAnoLetivo = document.getElementById("select-ano-letivo");
+const botaoNovoAnoLetivo = document.getElementById("botao-novo-ano-letivo");
+const modalAnoLetivo = document.getElementById("modal-ano-letivo");
+const inputAnoLetivo = document.getElementById("input-ano-letivo");
+const copiarConfigAno = document.getElementById("copiar-config-ano");
+const mensagemModalAnoLetivo = document.getElementById("mensagem-modal-ano-letivo");
+const botaoCancelarModalAno = document.getElementById("botao-cancelar-modal-ano");
+const botaoConfirmarModalAno = document.getElementById("botao-confirmar-modal-ano");
 const botaoResetarBimestre = document.getElementById("botao-resetar-bimestre");
 const botaoResetarBimestres = document.getElementById("botao-resetar-bimestres");
 const botaoResetarPerfil = document.getElementById("botao-resetar-perfil");
@@ -183,15 +197,60 @@ const materiasPadrao = [
     "Artes"
 ];
 
-const inputsValores = [
-    configValor10,
-    configValor9,
-    configValor8,
-    configValor7,
-    configValor6,
-    configValor5,
-    configValorMenor5
-];
+function obterInputsValores() {
+    return document.querySelectorAll("#grade-valores input[type='number']");
+}
+
+function idInputDaFaixa(faixa) {
+    return "config-valor-" + faixa;
+}
+
+function montarGradeValores() {
+    if (!gradeValores) {
+        return;
+    }
+
+    gradeValores.innerHTML = "";
+
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
+        gradeValores.appendChild(criarCampoValor(faixa, "Nota " + faixa + ":"));
+    }
+}
+
+function criarCampoValor(faixa, textoLabel) {
+    const campo = document.createElement("div");
+    campo.className = "campo-valor";
+    campo.setAttribute("data-faixa", String(faixa));
+
+    const idInput = idInputDaFaixa(faixa);
+
+    const label = document.createElement("label");
+    label.setAttribute("for", idInput);
+    label.textContent = textoLabel;
+
+    const envelope = document.createElement("div");
+    envelope.className = "campo-valor-com-prefixo";
+
+    const prefixo = document.createElement("span");
+    prefixo.className = "prefixo-desconto";
+    prefixo.hidden = true;
+    prefixo.setAttribute("aria-hidden", "true");
+    prefixo.textContent = "−";
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.id = idInput;
+    input.min = "0";
+    input.step = "1";
+
+    envelope.appendChild(prefixo);
+    envelope.appendChild(input);
+    campo.appendChild(label);
+    campo.appendChild(envelope);
+
+    return campo;
+}
 
 function mostrarMensagem(elemento, texto, tipo) {
     elemento.textContent = texto;
@@ -254,6 +313,10 @@ function formatarValorNotaPreview(textoNota) {
 
     const valor = calcularValorDaNota(nota);
 
+    if (valor === null) {
+        return { texto: "perde tudo", tipo: "negativo" };
+    }
+
     if (typeof valor !== "number") {
         return { texto: "—", tipo: "" };
     }
@@ -297,6 +360,7 @@ function atualizarTodosPreviewsNotas() {
 
 function mostrarResultado(bimestre) {
     let textoLista = "";
+    let perdeTudo = false;
 
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
@@ -306,6 +370,13 @@ function mostrarResultado(bimestre) {
             continue;
         }
         const nota = Number(notaDigitada);
+
+        if (notaEhMenorQue1(nota)) {
+            perdeTudo = true;
+            textoLista = textoLista + materia.nome + ": perde tudo | ";
+            continue;
+        }
+
         const valor = calcularValorDaNota(nota);
 
         if (valor > 0) {
@@ -315,17 +386,45 @@ function mostrarResultado(bimestre) {
         }
     }
 
+    if (perdeTudo) {
+        textoLista = textoLista + "Nota menor que 1: valor do bimestre zerado. | ";
+    }
+
+    if (dicaResultado) {
+        dicaResultado.hidden = true;
+    }
+
     listaValores.textContent = textoLista;
-    totalPositivoE1.textContent = "Total positivo R$" + bimestre.totalPositivo;
-    totalDescontosE1.textContent = "Total descontos R$" + bimestre.totalDescontos;
+    totalPositivoE1.textContent = "Total positivo: R$ " + bimestre.totalPositivo;
+    totalDescontosE1.textContent = "Descontos: R$ " + bimestre.totalDescontos;
     valorBimestreE1.textContent = "R$ " + bimestre.valorTotal;
 }
 
 function limparResultados() {
     listaValores.textContent = "";
-    totalPositivoE1.textContent = "Total positivo: R$ ";
-    totalDescontosE1.textContent = "Descontos: R$ ";
-    valorBimestreE1.textContent = "R$ ";
+    totalPositivoE1.textContent = "";
+    totalDescontosE1.textContent = "";
+    valorBimestreE1.textContent = "—";
+
+    if (dicaResultado) {
+        dicaResultado.hidden = false;
+        dicaResultado.textContent = "Preencha as notas e clique em Calcular bimestre para ver o resumo.";
+    }
+}
+
+function atualizarAvisoValoresNotas() {
+    if (!avisoValoresNotas) {
+        return;
+    }
+
+    if (!limiteDescontoFoiEscolhido()) {
+        avisoValoresNotas.hidden = false;
+        avisoValoresNotas.innerHTML = "Escolha em <strong>Valores por nota</strong> a partir de qual nota começa o desconto.";
+        return;
+    }
+
+    avisoValoresNotas.hidden = valoresEstaoConfigurados();
+    avisoValoresNotas.innerHTML = "Configure os <strong>valores por nota</strong> mais abaixo para ver o R$ de cada matéria.";
 }
 
 function bloquearCampos(bloquear) {
@@ -416,7 +515,10 @@ function criarValoresVazios() {
         7: null,
         6: null,
         5: null,
-        menorQue5: null
+        4: null,
+        3: null,
+        2: null,
+        1: null
     };
 }
 
@@ -440,6 +542,7 @@ function criarPerfil(nome) {
         nome: nome.trim(),
         materias: criarMateriasIniciais(),
         valoresPorNota: criarValoresVazios(),
+        notaInicioDesconto: null,
         bimestreAtual: "primeiro",
         bimestres: criarBimestresVazios()
     };
@@ -487,10 +590,8 @@ function garantirPerfilPadrao() {
 }
 
 function copiarValoresPorNota(origem, destino) {
-    const faixas = [10, 9, 8, 7, 6, 5];
-
-    for (let i = 0; i < faixas.length; i++) {
-        const faixa = faixas[i];
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
         const valor = origem[faixa];
 
         if (valor === null || valor === undefined || valor === "") {
@@ -500,10 +601,26 @@ function copiarValoresPorNota(origem, destino) {
         }
     }
 
-    if (origem.menorQue5 === null || origem.menorQue5 === undefined || origem.menorQue5 === "") {
-        destino.menorQue5 = null;
-    } else {
-        destino.menorQue5 = Number(origem.menorQue5);
+    // Migração: contas antigas só tinham "menor que 5".
+    // Se 4..1 ainda estão vazios, reaproveita esse valor nelas.
+    if (origem.menorQue5 !== null && origem.menorQue5 !== undefined && origem.menorQue5 !== "") {
+        const valorAntigo = Number(origem.menorQue5);
+        const faixasBaixas = [4, 3, 2, 1];
+
+        for (let i = 0; i < faixasBaixas.length; i++) {
+            const faixa = faixasBaixas[i];
+
+            if (destino[faixa] === null || destino[faixa] === undefined) {
+                destino[faixa] = valorAntigo;
+            }
+        }
+    }
+
+    // Migração: "menor que 1" passou a usar o valor da nota 1.
+    if (destino[1] === null || destino[1] === undefined) {
+        if (origem.menorQue1 !== null && origem.menorQue1 !== undefined && origem.menorQue1 !== "") {
+            destino[1] = Number(origem.menorQue1);
+        }
     }
 }
 
@@ -516,6 +633,7 @@ function capturarEstadoDoPerfilAtual() {
 
     perfil.materias = materias;
     perfil.bimestreAtual = bimestreAtual;
+    perfil.notaInicioDesconto = notaInicioDesconto;
     perfil.valoresPorNota = {
         10: valoresPorNota[10],
         9: valoresPorNota[9],
@@ -523,7 +641,10 @@ function capturarEstadoDoPerfilAtual() {
         7: valoresPorNota[7],
         6: valoresPorNota[6],
         5: valoresPorNota[5],
-        menorQue5: valoresPorNota.menorQue5
+        4: valoresPorNota[4],
+        3: valoresPorNota[3],
+        2: valoresPorNota[2],
+        1: valoresPorNota[1]
     };
     perfil.bimestres = {
         primeiro: bimestres.primeiro,
@@ -537,6 +658,7 @@ function aplicarEstadoDoPerfil(perfil) {
     if (!perfil) {
         materias = [];
         limparValoresPorNota();
+        notaInicioDesconto = null;
         bimestreAtual = "primeiro";
         bimestres.primeiro = criarBimestreVazio();
         bimestres.segundo = criarBimestreVazio();
@@ -547,6 +669,13 @@ function aplicarEstadoDoPerfil(perfil) {
 
     materias = perfil.materias || [];
     bimestreAtual = perfil.bimestreAtual || "primeiro";
+    if (perfil.notaInicioDesconto !== undefined && perfil.notaInicioDesconto !== null && perfil.notaInicioDesconto !== "") {
+        notaInicioDesconto = Number(perfil.notaInicioDesconto);
+    } else if (perfil.notaMinimaRecompensa) {
+        notaInicioDesconto = Number(perfil.notaMinimaRecompensa) - 1;
+    } else {
+        notaInicioDesconto = null;
+    }
     copiarValoresPorNota(perfil.valoresPorNota || criarValoresVazios(), valoresPorNota);
 
     const bimestresDoPerfil = perfil.bimestres || criarBimestresVazios();
@@ -572,6 +701,7 @@ function atualizarTelaDoPerfilAtual() {
 
     atualizarStatusNaTela(bimestres[bimestreAtual]);
     atualizarDashboard();
+    atualizarAvisoValoresNotas();
     mostrarMensagem(mensagemValidacao, "");
     mostrarMensagem(mensagemConfig, "");
     mostrarMensagem(mensagemReset, "");
@@ -707,17 +837,207 @@ function montarAvataresPerfis() {
 }
 
 function salvarDados() {
-    capturarEstadoDoPerfilAtual();
+    capturarEstadoDoAnoAtual();
     normalizarNomenclaturaPerfis();
 
     const dados = {
-        versao: 2,
+        versao: VERSAO_DADOS,
         responsavel: responsavel,
-        perfis: perfis,
-        perfilAtualId: perfilAtualId
+        anoLetivoAtual: anoLetivoAtual,
+        anosLetivos: anosLetivos
     };
 
     localStorage.setItem("sistemaRecompensa", JSON.stringify(dados));
+}
+
+function obterAnoCalendarioAtual() {
+    return String(new Date().getFullYear());
+}
+
+function garantirEstruturaAnosLetivos() {
+    if (!anosLetivos || typeof anosLetivos !== "object") {
+        anosLetivos = {};
+    }
+
+    if (!anoLetivoAtual) {
+        anoLetivoAtual = obterAnoCalendarioAtual();
+    }
+
+    if (!anosLetivos[anoLetivoAtual]) {
+        anosLetivos[anoLetivoAtual] = {
+            perfis: perfis || [],
+            perfilAtualId: perfilAtualId || null
+        };
+    }
+}
+
+function capturarEstadoDoAnoAtual() {
+    capturarEstadoDoPerfilAtual();
+    normalizarNomenclaturaPerfis();
+    garantirEstruturaAnosLetivos();
+
+    anosLetivos[anoLetivoAtual] = {
+        perfis: perfis,
+        perfilAtualId: perfilAtualId
+    };
+}
+
+function carregarEstadoDoAno(ano) {
+    const dadosAno = anosLetivos[ano];
+
+    if (!dadosAno) {
+        perfis = [];
+        perfilAtualId = null;
+    } else {
+        perfis = dadosAno.perfis || [];
+        perfilAtualId = dadosAno.perfilAtualId || null;
+    }
+
+    normalizarNomenclaturaPerfis();
+    garantirPerfilPadrao();
+    aplicarEstadoDoPerfil(obterPerfilAtual());
+}
+
+function listarAnosLetivosOrdenados() {
+    const anos = Object.keys(anosLetivos);
+
+    anos.sort(function (a, b) {
+        return Number(b) - Number(a);
+    });
+
+    return anos;
+}
+
+function atualizarSelectAnoLetivo() {
+    if (!selectAnoLetivo) {
+        return;
+    }
+
+    garantirEstruturaAnosLetivos();
+    const anos = listarAnosLetivosOrdenados();
+    selectAnoLetivo.innerHTML = "";
+
+    for (let i = 0; i < anos.length; i++) {
+        const option = document.createElement("option");
+        option.value = anos[i];
+        option.textContent = anos[i];
+        selectAnoLetivo.appendChild(option);
+    }
+
+    selectAnoLetivo.value = anoLetivoAtual;
+}
+
+function trocarAnoLetivo(novoAno) {
+    const ano = String(novoAno);
+
+    if (!ano || ano === anoLetivoAtual) {
+        return;
+    }
+
+    if (!anosLetivos[ano]) {
+        atualizarSelectAnoLetivo();
+        return;
+    }
+
+    capturarEstadoDoAnoAtual();
+    anoLetivoAtual = ano;
+    carregarEstadoDoAno(anoLetivoAtual);
+    atualizarSelectAnoLetivo();
+    montarAvataresPerfis();
+    atualizarTelaDoPerfilAtual();
+    salvarDados();
+}
+
+function clonarMaterias(lista) {
+    const copia = [];
+
+    for (let i = 0; i < lista.length; i++) {
+        copia.push({
+            id: lista[i].id,
+            nome: lista[i].nome
+        });
+    }
+
+    return copia;
+}
+
+function clonarPerfisParaNovoAno(perfisOrigem, copiarConfig) {
+    const novos = [];
+
+    for (let i = 0; i < perfisOrigem.length; i++) {
+        const origem = perfisOrigem[i];
+        const perfil = criarPerfil(origem.nome || "Meu perfil");
+
+        if (copiarConfig) {
+            perfil.materias = clonarMaterias(origem.materias || criarMateriasIniciais());
+            perfil.notaInicioDesconto =
+                origem.notaInicioDesconto === undefined || origem.notaInicioDesconto === null || origem.notaInicioDesconto === ""
+                    ? null
+                    : Number(origem.notaInicioDesconto);
+            copiarValoresPorNota(origem.valoresPorNota || {}, perfil.valoresPorNota);
+        }
+
+        novos.push(perfil);
+    }
+
+    if (novos.length === 0) {
+        novos.push(criarPerfil("Meu perfil"));
+    }
+
+    return novos;
+}
+
+function abrirModalAnoLetivo() {
+    const sugestao = Number(anoLetivoAtual) + 1;
+    inputAnoLetivo.value = String(sugestao);
+    copiarConfigAno.checked = true;
+    mostrarMensagem(mensagemModalAnoLetivo, "");
+    modalAnoLetivo.hidden = false;
+    inputAnoLetivo.focus();
+    inputAnoLetivo.select();
+}
+
+function fecharModalAnoLetivo() {
+    modalAnoLetivo.hidden = true;
+    mostrarMensagem(mensagemModalAnoLetivo, "");
+}
+
+function criarNovoAnoLetivo() {
+    const ano = String(Number(inputAnoLetivo.value));
+
+    if (!inputAnoLetivo.value || Number.isNaN(Number(inputAnoLetivo.value))) {
+        mostrarMensagem(mensagemModalAnoLetivo, "Digite um ano válido.", "erro");
+        return false;
+    }
+
+    if (Number(ano) < 2000 || Number(ano) > 2100) {
+        mostrarMensagem(mensagemModalAnoLetivo, "Use um ano entre 2000 e 2100.", "erro");
+        return false;
+    }
+
+    if (anosLetivos[ano]) {
+        mostrarMensagem(mensagemModalAnoLetivo, "Esse ano letivo já existe.", "erro");
+        return false;
+    }
+
+    capturarEstadoDoAnoAtual();
+
+    const perfisNovos = clonarPerfisParaNovoAno(perfis, copiarConfigAno.checked);
+
+    anosLetivos[ano] = {
+        perfis: perfisNovos,
+        perfilAtualId: perfisNovos[0].id
+    };
+
+    anoLetivoAtual = ano;
+    carregarEstadoDoAno(ano);
+    atualizarSelectAnoLetivo();
+    montarAvataresPerfis();
+    atualizarTelaDoPerfilAtual();
+    salvarDados();
+    fecharModalAnoLetivo();
+    mostrarMensagem(mensagemValidacao, "Ano letivo " + ano + " criado.", "sucesso");
+    return true;
 }
 
 function migrarDadosAntigos(dados) {
@@ -738,19 +1058,25 @@ function migrarDadosAntigos(dados) {
     perfilAtualId = perfil.id;
 }
 
-function carregarDados() {
-    const dadosSalvos = localStorage.getItem("sistemaRecompensa");
-
-    if (!dadosSalvos) {
-        return;
-    }
-
-    const dados = JSON.parse(dadosSalvos);
-
+function aplicarDadosCarregados(dados) {
     if (dados.responsavel) {
         responsavel = dados.responsavel;
     }
 
+    if (dados.anosLetivos && typeof dados.anosLetivos === "object") {
+        anosLetivos = dados.anosLetivos;
+        anoLetivoAtual = dados.anoLetivoAtual || Object.keys(anosLetivos)[0] || obterAnoCalendarioAtual();
+
+        if (!anosLetivos[anoLetivoAtual]) {
+            const anos = Object.keys(anosLetivos);
+            anoLetivoAtual = anos.length > 0 ? anos[0] : obterAnoCalendarioAtual();
+        }
+
+        carregarEstadoDoAno(anoLetivoAtual);
+        return;
+    }
+
+    // Migração v2 → v3: empacota perfis no ano atual.
     if (dados.perfis || dados.filhos) {
         perfis = dados.perfis || dados.filhos;
         perfilAtualId = dados.perfilAtualId || dados.filhoAtualId || (perfis[0] && perfis[0].id) || null;
@@ -758,8 +1084,33 @@ function carregarDados() {
         migrarDadosAntigos(dados);
     }
 
+    anoLetivoAtual = obterAnoCalendarioAtual();
+    anosLetivos = {};
+    anosLetivos[anoLetivoAtual] = {
+        perfis: perfis,
+        perfilAtualId: perfilAtualId
+    };
+
     normalizarNomenclaturaPerfis();
     aplicarEstadoDoPerfil(obterPerfilAtual());
+}
+
+function carregarDados() {
+    const dadosSalvos = localStorage.getItem("sistemaRecompensa");
+
+    if (!dadosSalvos) {
+        anoLetivoAtual = obterAnoCalendarioAtual();
+        anosLetivos = {};
+        anosLetivos[anoLetivoAtual] = {
+            perfis: [],
+            perfilAtualId: null
+        };
+        return;
+    }
+
+    const dados = JSON.parse(dadosSalvos);
+    aplicarDadosCarregados(dados);
+    atualizarSelectAnoLetivo();
 }
 
 function garantirPerfilParaReset() {
@@ -795,14 +1146,15 @@ function zerarPerfilInteiro() {
     bimestres.segundo = criarBimestreVazio();
     bimestres.terceiro = criarBimestreVazio();
     bimestres.quarto = criarBimestreVazio();
-    materias = [];
+    materias = criarMateriasIniciais();
     limparValoresPorNota();
+    notaInicioDesconto = null;
     bimestreAtual = "primeiro";
     selectBimestre.value = "primeiro";
     marcarAbaAtiva();
     salvarDados();
     atualizarTelaDoPerfilAtual();
-    mostrarMensagem(mensagemReset, "Perfil zerado por completo.", "sucesso");
+    mostrarMensagem(mensagemReset, "Perfil zerado. As matérias padrão voltaram.", "sucesso");
 }
 
 botaoResetarBimestre.addEventListener("click", function () {
@@ -844,7 +1196,7 @@ botaoResetarPerfil.addEventListener("click", function () {
         return;
     }
 
-    const confirmou = confirm("Isso apaga matérias, notas, valores, fechamentos e pagamentos deste perfil. Continuar?");
+    const confirmou = confirm("Isso apaga notas, valores, fechamentos e pagamentos deste perfil. As matérias voltam para a lista padrão (as que você adicionou a mais saem). Continuar?");
 
     if (!confirmou) {
         return;
@@ -863,6 +1215,7 @@ botaoSalvarValores.addEventListener("click", function(){
     salvarDados();
     definirModoEdicaoValores(false);
     atualizarTodosPreviewsNotas();
+    atualizarAvisoValoresNotas();
     mostrarMensagem(mensagemConfig, "Valores salvos.", "sucesso");
 });
 
@@ -871,20 +1224,100 @@ botaoEditarValores.addEventListener("click", function () {
     mostrarMensagem(mensagemConfig, "");
 });
 
+function obterNotaMinimaRecompensa() {
+    if (notaInicioDesconto === null || notaInicioDesconto === undefined || notaInicioDesconto === "") {
+        return 8;
+    }
+
+    return Number(notaInicioDesconto) + 1;
+}
+
+function limiteDescontoFoiEscolhido() {
+    return notaInicioDesconto !== null && notaInicioDesconto !== undefined && notaInicioDesconto !== "";
+}
+
+function atualizarVisibilidadeCamposValores() {
+    const escolheu = limiteDescontoFoiEscolhido();
+
+    if (dicaValores) {
+        dicaValores.hidden = !escolheu;
+    }
+
+    if (gradeValores) {
+        gradeValores.hidden = !escolheu;
+    }
+
+    if (acoesValores) {
+        acoesValores.hidden = !escolheu;
+    }
+}
+
 function definirModoEdicaoValores(editando) {
+    const inputsValores = obterInputsValores();
+
     for (let i = 0; i < inputsValores.length; i++) {
         inputsValores[i].disabled = !editando;
+    }
+
+    if (selectInicioDesconto) {
+        selectInicioDesconto.disabled = !editando;
+    }
+
+    if (!limiteDescontoFoiEscolhido()) {
+        botaoSalvarValores.hidden = true;
+        botaoEditarValores.hidden = true;
+        return;
     }
 
     botaoSalvarValores.hidden = !editando;
     botaoEditarValores.hidden = editando;
 }
 
+function renormalizarSinaisValoresSalvos() {
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
+
+        if (typeof valoresPorNota[faixa] !== "number") {
+            continue;
+        }
+
+        const absoluto = Math.abs(valoresPorNota[faixa]);
+        valoresPorNota[faixa] = faixaEhRecompensa(faixa) ? absoluto : -absoluto;
+    }
+}
+
+selectInicioDesconto.addEventListener("change", function () {
+    if (selectInicioDesconto.value === "") {
+        notaInicioDesconto = null;
+        atualizarVisibilidadeCamposValores();
+        atualizarVisualCamposValores();
+        atualizarAvisoValoresNotas();
+        return;
+    }
+
+    notaInicioDesconto = Number(selectInicioDesconto.value);
+    atualizarVisibilidadeCamposValores();
+    atualizarVisualCamposValores();
+    mostrarValoresNaTela();
+    atualizarAvisoValoresNotas();
+
+    if (valoresEstaoConfigurados()) {
+        renormalizarSinaisValoresSalvos();
+        atualizarTodosPreviewsNotas();
+        atualizarDashboard();
+        salvarDados();
+        definirModoEdicaoValores(false);
+    } else {
+        definirModoEdicaoValores(true);
+    }
+});
+
 function atualizarDashboard() {
     const bimestre = bimestres[bimestreAtual];
     let notasCadastradas = 0;
     let notasAcima = 0;
     let notasAbaixo = 0;
+    const notaMinimaRecompensa = obterNotaMinimaRecompensa();
 
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
@@ -897,7 +1330,7 @@ function atualizarDashboard() {
         notasCadastradas = notasCadastradas + 1;
 
         const nota = Number(notaDigitada);
-        if (nota >= 8){
+        if (nota >= notaMinimaRecompensa){
             notasAcima = notasAcima + 1;
         } else {
             notasAbaixo = notasAbaixo + 1;
@@ -907,6 +1340,14 @@ function atualizarDashboard() {
     dashboardNotasCadastradas.textContent = notasCadastradas + "/" + materias.length;
     dashboardNotasAcima.textContent = String(notasAcima);
     dashboardNotasAbaixo.textContent = String(notasAbaixo);
+
+    if (rotuloNotasAcima) {
+        rotuloNotasAcima.textContent = "Notas maiores ou iguais a " + notaMinimaRecompensa;
+    }
+
+    if (rotuloNotasAbaixo) {
+        rotuloNotasAbaixo.textContent = "Notas menores que " + notaMinimaRecompensa;
+    }
 
     dashboardPrimeiro.textContent = "R$ " + bimestres.primeiro.valorTotal;
     dashboardPrimeiroStatus.textContent = textoStatusAno(bimestres.primeiro);
@@ -1005,6 +1446,15 @@ function montarCamposNotas() {
         return;
     }
 
+    const cabecalho = document.createElement("div");
+    cabecalho.className = "lista-notas-cabecalho";
+    cabecalho.innerHTML =
+        "<span>Matéria</span>" +
+        "<span>Nota</span>" +
+        "<span>Valor</span>" +
+        "<span class=\"lista-notas-cabecalho-acao\"></span>";
+    listaNotasMaterias.appendChild(cabecalho);
+
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
 
@@ -1021,6 +1471,7 @@ function montarCamposNotas() {
         input.min = "0";
         input.max = "10";
         input.step = "0.1";
+        input.placeholder = "0-10";
         input.addEventListener("input", function () {
             atualizarPreviewValorNota(input);
         });
@@ -1032,6 +1483,7 @@ function montarCamposNotas() {
         const botaoRemover = document.createElement("button");
         botaoRemover.type = "button";
         botaoRemover.className = "botao-remover";
+        botaoRemover.setAttribute("aria-label", "Remover " + materia.nome);
         botaoRemover.textContent = "Remover";
         botaoRemover.addEventListener("click", function () {
             removerMateria(materia.id);
@@ -1069,43 +1521,113 @@ function removerMateria(id) {
     mostrarMensagem(mensagemValidacao, "Matéria removida.", "sucesso");
 }
 
-function valorParaInput(valor) {
+function valorParaInputAbsoluto(valor) {
     if (valor === null || valor === undefined) {
         return "";
     }
-    return valor;
+
+    return Math.abs(Number(valor));
+}
+
+function lerValorPositivoDoCampo(input) {
+    return Math.abs(Number(input.value));
+}
+
+function faixaEhRecompensa(faixa) {
+    if (!limiteDescontoFoiEscolhido()) {
+        return true;
+    }
+
+    return Number(faixa) > Number(notaInicioDesconto);
+}
+
+function atualizarVisualCamposValores() {
+    const campos = document.querySelectorAll(".campo-valor[data-faixa]");
+    const notaMinimaRecompensa = obterNotaMinimaRecompensa();
+
+    for (let i = 0; i < campos.length; i++) {
+        const campo = campos[i];
+        const faixa = campo.getAttribute("data-faixa");
+        const ehRecompensa = faixaEhRecompensa(faixa);
+        const label = campo.querySelector("label");
+        const prefixo = campo.querySelector(".prefixo-desconto");
+
+        campo.classList.toggle("campo-valor-desconto", !ehRecompensa);
+
+        if (prefixo) {
+            prefixo.hidden = ehRecompensa;
+        }
+
+        if (!label) {
+            continue;
+        }
+
+        if (ehRecompensa) {
+            label.textContent = "Nota " + faixa + ":";
+        } else {
+            label.textContent = "Nota " + faixa + " (desconto):";
+        }
+    }
+
+    if (selectInicioDesconto) {
+        selectInicioDesconto.value = limiteDescontoFoiEscolhido() ? String(notaInicioDesconto) : "";
+    }
+
+    if (dicaValores && limiteDescontoFoiEscolhido()) {
+        dicaValores.textContent =
+            "Desconto a partir da nota " + notaInicioDesconto +
+            ". Notas a partir de " + notaMinimaRecompensa +
+            " geram recompensa. Digite só o número; o sinal de menos já aparece nos descontos. Nota menor que 1 zera o bimestre (perde tudo).";
+    }
 }
 
 function mostrarValoresNaTela() {
-    configValor10.value = valorParaInput(valoresPorNota[10]);
-    configValor9.value = valorParaInput(valoresPorNota[9]);
-    configValor8.value = valorParaInput(valoresPorNota[8]);
-    configValor7.value = valorParaInput(valoresPorNota[7]);
-    configValor6.value = valorParaInput(valoresPorNota[6]);
-    configValor5.value = valorParaInput(valoresPorNota[5]);
-    configValorMenor5.value = valorParaInput(valoresPorNota.menorQue5);
+    atualizarVisibilidadeCamposValores();
+    atualizarVisualCamposValores();
+
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
+        const input = document.getElementById(idInputDaFaixa(faixa));
+
+        if (input) {
+            input.value = valorParaInputAbsoluto(valoresPorNota[faixa]);
+        }
+    }
+}
+
+function valorComSinalDaFaixa(faixa, input) {
+    const valor = lerValorPositivoDoCampo(input);
+
+    if (faixaEhRecompensa(faixa)) {
+        return valor;
+    }
+
+    return -valor;
 }
 
 function aplicarValoresDaTela(){
-    if (configValor10.value === "" ||
-    configValor9.value === "" ||
-    configValor8.value === "" ||
-    configValor7.value === "" ||
-    configValor6.value === "" ||
-    configValor5.value === "" ||
-    configValorMenor5.value === ""
-    ) {
-        mostrarMensagem(mensagemConfig, "Preencher todos os valores das notas.", "erro");
+    if (!limiteDescontoFoiEscolhido()) {
+        mostrarMensagem(mensagemConfig, "Escolha a partir de qual nota começa o desconto.", "erro");
         return false;
     }
 
-    valoresPorNota[10] = Number(configValor10.value);
-    valoresPorNota[9] = Number(configValor9.value);
-    valoresPorNota[8] = Number(configValor8.value);
-    valoresPorNota[7] = Number(configValor7.value);
-    valoresPorNota[6] = Number(configValor6.value);
-    valoresPorNota[5] = Number(configValor5.value);
-    valoresPorNota.menorQue5 = Number(configValorMenor5.value);
+    notaInicioDesconto = Number(selectInicioDesconto.value);
+
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
+        const input = document.getElementById(idInputDaFaixa(faixa));
+
+        if (!input || input.value === "") {
+            mostrarMensagem(mensagemConfig, "Preencher todos os valores das notas.", "erro");
+            return false;
+        }
+    }
+
+    for (let i = 0; i < FAIXAS_NOTA.length; i++) {
+        const faixa = FAIXAS_NOTA[i];
+        const input = document.getElementById(idInputDaFaixa(faixa));
+        valoresPorNota[faixa] = valorComSinalDaFaixa(faixa, input);
+    }
 
     return true;
 }
@@ -1124,10 +1646,20 @@ botaoCalcular.addEventListener("click", function(){
     let totalPositivo = 0;
     let totalDescontos = 0;
     let textoLista = "";
+    let perdeTudo = false;
+
     for (let i = 0; i < materias.length; i++) {
         const materia = materias[i];
         const nota = Number(document.getElementById(materia.id).value);
+
+        if (notaEhMenorQue1(nota)) {
+            perdeTudo = true;
+            textoLista = textoLista + materia.nome + ": perde tudo | ";
+            continue;
+        }
+
         const valor = calcularValorDaNota(nota);
+
         if (valor > 0) {
             totalPositivo = totalPositivo + valor;
             textoLista = textoLista + materia.nome + ": +" + valor + " | ";
@@ -1136,10 +1668,18 @@ botaoCalcular.addEventListener("click", function(){
             textoLista = textoLista + materia.nome + ": " + valor + " | ";
         }
     }
+
     let valorBimestre = totalPositivo - totalDescontos;
-    if (valorBimestre < 0){
+
+    if (valorBimestre < 0) {
         valorBimestre = 0;
     }
+
+    if (perdeTudo) {
+        valorBimestre = 0;
+        textoLista = textoLista + "Nota menor que 1: valor do bimestre zerado. | ";
+    }
+
     listaValores.textContent = textoLista;
     totalPositivoE1.textContent = "Total positivo R$" + totalPositivo;
     totalDescontosE1.textContent = "Descontos R$" + totalDescontos;
@@ -1151,6 +1691,12 @@ botaoCalcular.addEventListener("click", function(){
     bimestres[bimestreAtual].valorTotal = valorBimestre;
     salvarDados();
     atualizarDashboard();
+
+    if (perdeTudo) {
+        mostrarMensagem(mensagemValidacao, "Há nota menor que 1: o valor do bimestre foi zerado.", "erro");
+    } else {
+        mostrarMensagem(mensagemValidacao, "");
+    }
 });
 
 botaoFechar.addEventListener("click", function () {
@@ -1516,9 +2062,9 @@ function mostrarTelaCadastro() {
     telaAcesso.hidden = false;
     formCadastro.hidden = false;
     formLogin.hidden = true;
-    tituloAcesso.textContent = "Recompensa Escolar";
+    tituloAcesso.textContent = "SRE";
     tituloPainelAcesso.innerHTML = "Bem-vindo ao <strong>CADASTRO</strong>";
-    subtituloAcesso.textContent = "Preencha os dados para criar o acesso do responsável.";
+    subtituloAcesso.textContent = "Sistema de Recompensa Escolar. Preencha os dados para criar o acesso do responsável.";
     mostrarMensagem(mensagemAcesso, "");
     acessoNome.value = "";
     acessoSenhaCadastro.value = "";
@@ -1530,9 +2076,9 @@ function mostrarTelaLogin() {
     telaAcesso.hidden = false;
     formCadastro.hidden = true;
     formLogin.hidden = false;
-    tituloAcesso.textContent = "Recompensa Escolar";
+    tituloAcesso.textContent = "SRE";
     tituloPainelAcesso.innerHTML = "Bem-vindo <strong>de volta</strong>";
-    subtituloAcesso.textContent = "Olá, " + responsavel.nome + ". Digite sua senha para continuar.";
+    subtituloAcesso.textContent = "Sistema de Recompensa Escolar. Olá, " + responsavel.nome + ". Digite sua senha para continuar.";
     mostrarMensagem(mensagemAcesso, "");
     acessoSenhaLogin.value = "";
     acessoSenhaLogin.focus();
@@ -1541,7 +2087,9 @@ function mostrarTelaLogin() {
 function iniciarApp() {
     telaAcesso.hidden = true;
     appPrincipal.hidden = false;
+    garantirEstruturaAnosLetivos();
     garantirPerfilPadrao();
+    atualizarSelectAnoLetivo();
     montarAvataresPerfis();
     atualizarTelaDoPerfilAtual();
     salvarDados();
@@ -1572,8 +2120,14 @@ botaoCriarConta.addEventListener("click", function () {
         senha: senha
     };
 
+    anoLetivoAtual = obterAnoCalendarioAtual();
+    anosLetivos = {};
     perfis = [];
     perfilAtualId = null;
+    anosLetivos[anoLetivoAtual] = {
+        perfis: [],
+        perfilAtualId: null
+    };
     garantirPerfilPadrao();
     salvarDados();
     ativarSessao();
@@ -1778,6 +2332,13 @@ function limparEstadoDaAplicacao() {
     perfilAtualId = null;
     materias = [];
     bimestreAtual = "primeiro";
+    notaInicioDesconto = null;
+    anoLetivoAtual = obterAnoCalendarioAtual();
+    anosLetivos = {};
+    anosLetivos[anoLetivoAtual] = {
+        perfis: [],
+        perfilAtualId: null
+    };
     limparValoresPorNota();
 
     bimestres.primeiro = criarBimestreVazio();
@@ -1954,7 +2515,11 @@ function montarLinhasNotasRelatorio(bimestre) {
         let valorTexto = "—";
 
         if (notaDigitada !== undefined && notaDigitada !== "" && valoresEstaoConfigurados()) {
-            valorTexto = "R$ " + calcularValorDaNota(Number(notaDigitada));
+            if (notaEhMenorQue1(Number(notaDigitada))) {
+                valorTexto = "perde tudo";
+            } else {
+                valorTexto = "R$ " + calcularValorDaNota(Number(notaDigitada));
+            }
         }
 
         html = html +
@@ -1992,6 +2557,7 @@ function imprimirRelatorioBimestre() {
 
     const html =
         "<h1>Relatório do bimestre</h1>" +
+        "<p><strong>Ano letivo:</strong> " + escaparHtml(String(anoLetivoAtual)) + "</p>" +
         "<p><strong>Perfil:</strong> " + escaparHtml(nomePerfil) + "</p>" +
         "<p><strong>Responsável:</strong> " + escaparHtml(nomeResponsavel) + "</p>" +
         "<p><strong>Bimestre:</strong> " + escaparHtml(nomesBimestres[bimestreAtual]) + "</p>" +
@@ -2032,7 +2598,8 @@ function imprimirRelatorioAno() {
     }
 
     const html =
-        "<h1>Relatório do ano</h1>" +
+        "<h1>Relatório do ano " + escaparHtml(String(anoLetivoAtual)) + "</h1>" +
+        "<p><strong>Ano letivo:</strong> " + escaparHtml(String(anoLetivoAtual)) + "</p>" +
         "<p><strong>Perfil:</strong> " + escaparHtml(nomePerfil) + "</p>" +
         "<p><strong>Responsável:</strong> " + escaparHtml(nomeResponsavel) + "</p>" +
         "<table class=\"area-relatorio-tabela\"><thead><tr><th>Bimestre</th><th>Valor</th><th>Status</th></tr></thead><tbody>" +
@@ -2073,20 +2640,23 @@ function montarNomeArquivoBackup() {
     const ano = agora.getFullYear();
     const mes = String(agora.getMonth() + 1).padStart(2, "0");
     const dia = String(agora.getDate()).padStart(2, "0");
-    return "recompensa-escolar-" + ano + "-" + mes + "-" + dia + ".json";
+    return "recompensa-escolar-" + anoLetivoAtual + "-" + ano + "-" + mes + "-" + dia + ".json";
+}
+
+function montarObjetoBackup() {
+    capturarEstadoDoAnoAtual();
+    normalizarNomenclaturaPerfis();
+
+    return {
+        versao: VERSAO_DADOS,
+        responsavel: responsavel,
+        anoLetivoAtual: anoLetivoAtual,
+        anosLetivos: anosLetivos
+    };
 }
 
 function exportarDados() {
-    capturarEstadoDoPerfilAtual();
-    normalizarNomenclaturaPerfis();
-
-    const dados = {
-        versao: 2,
-        responsavel: responsavel,
-        perfis: perfis,
-        perfilAtualId: perfilAtualId
-    };
-
+    const dados = montarObjetoBackup();
     const texto = JSON.stringify(dados, null, 2);
     const blob = new Blob([texto], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -2106,24 +2676,13 @@ function importarDadosDoObjeto(dados) {
         return "Arquivo inválido.";
     }
 
-    if (!dados.perfis && !dados.filhos && !dados.bimestres) {
+    if (!dados.anosLetivos && !dados.perfis && !dados.filhos && !dados.bimestres) {
         return "Este arquivo não parece ser um backup do sistema.";
     }
 
-    if (dados.responsavel) {
-        responsavel = dados.responsavel;
-    }
-
-    if (dados.perfis || dados.filhos) {
-        perfis = dados.perfis || dados.filhos;
-        perfilAtualId = dados.perfilAtualId || dados.filhoAtualId || (perfis[0] && perfis[0].id) || null;
-    } else if (dados.bimestres) {
-        migrarDadosAntigos(dados);
-    }
-
-    normalizarNomenclaturaPerfis();
+    aplicarDadosCarregados(dados);
     garantirPerfilPadrao();
-    aplicarEstadoDoPerfil(obterPerfilAtual());
+    atualizarSelectAnoLetivo();
     salvarDados();
     montarAvataresPerfis();
     atualizarTelaDoPerfilAtual();
@@ -2177,6 +2736,48 @@ inputImportar.addEventListener("change", function () {
     leitor.readAsText(arquivo);
 });
 
+if (selectAnoLetivo) {
+    selectAnoLetivo.addEventListener("change", function () {
+        trocarAnoLetivo(selectAnoLetivo.value);
+    });
+}
+
+if (botaoNovoAnoLetivo) {
+    botaoNovoAnoLetivo.addEventListener("click", function () {
+        abrirModalAnoLetivo();
+    });
+}
+
+if (botaoCancelarModalAno) {
+    botaoCancelarModalAno.addEventListener("click", function () {
+        fecharModalAnoLetivo();
+    });
+}
+
+if (botaoConfirmarModalAno) {
+    botaoConfirmarModalAno.addEventListener("click", function () {
+        criarNovoAnoLetivo();
+    });
+}
+
+if (modalAnoLetivo) {
+    modalAnoLetivo.querySelector(".modal-fundo").addEventListener("click", function () {
+        fecharModalAnoLetivo();
+    });
+}
+
+if (inputAnoLetivo) {
+    inputAnoLetivo.addEventListener("keydown", function (evento) {
+        if (evento.key === "Enter") {
+            botaoConfirmarModalAno.click();
+        }
+
+        if (evento.key === "Escape") {
+            fecharModalAnoLetivo();
+        }
+    });
+}
+
 acessoSenhaLogin.addEventListener("keydown", function (evento) {
     if (evento.key === "Enter") {
         botaoEntrar.click();
@@ -2189,6 +2790,7 @@ acessoSenhaConfirmar.addEventListener("keydown", function (evento) {
     }
 });
 
+montarGradeValores();
 carregarDados();
 
 if (!responsavel) {

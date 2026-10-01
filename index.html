@@ -3,13 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d6b5c">
+    <meta name="description" content="Notas viram recompensa. Cada bimestre conta.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SRE">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icons/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="css/style.css">
     <link  href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
-    <title>Sistema de Recompensa Escolar</title>
+    <title>SRE — Sistema de Recompensa Escolar</title>
 </head>
 <body>
     <section id="tela-acesso" class="tela-acesso" hidden>
@@ -60,8 +68,8 @@
 
         <div class="acesso-conteudo">
             <div class="cartao-acesso">
-                <h1 id="titulo-acesso" class="cartao-acesso-titulo">Recompensa Escolar</h1>
-                <p id="subtitulo-acesso" class="cartao-acesso-texto">Preencha os dados para criar o acesso do responsável.</p>
+                <h1 id="titulo-acesso" class="cartao-acesso-titulo">SRE</h1>
+                <p id="subtitulo-acesso" class="cartao-acesso-texto">Sistema de Recompensa Escolar. Preencha os dados para criar o acesso do responsável.</p>
 
                 <div id="form-cadastro">
                     <label for="acesso-nome">Nome</label>
@@ -99,7 +107,7 @@
    <header class="cabecalho">
         <div class="cabecalho-marca">
             <div class="cabecalho-titulo-linha">
-                <h1 class="nome-marca">Recompensa Escolar</h1>
+                <h1 class="nome-marca">SRE</h1>
                 <div class="cabecalho-bimestre">
                     <select id="select-bimestre" hidden>
                         <option value="primeiro">1º Bimestre</option>
@@ -110,7 +118,13 @@
                     <p id="titulo-bimestre" class="pill-status">1º Bimestre</p>
                 </div>
             </div>
+            <p class="nome-marca-completo">Sistema de Recompensa Escolar</p>
             <p class="subtitulo-marca">Notas viram recompensa. Cada bimestre conta.</p>
+            <div class="linha-ano-letivo">
+                <label for="select-ano-letivo">Ano letivo</label>
+                <select id="select-ano-letivo" aria-label="Ano letivo"></select>
+                <button type="button" id="botao-novo-ano-letivo" class="botao-secundario">+ Novo ano</button>
+            </div>
         </div>
 
         <div class="cabecalho-acoes">
@@ -228,6 +242,25 @@
         </div>
     </div>
 
+    <div id="modal-ano-letivo" class="modal" hidden>
+        <div class="modal-fundo"></div>
+        <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-ano-letivo" aria-modal="true">
+            <h3 id="titulo-modal-ano-letivo">Novo ano letivo</h3>
+            <p class="dica-modal">Cria um ano separado, sem misturar notas com o ano atual.</p>
+            <label for="input-ano-letivo">Ano</label>
+            <input type="number" id="input-ano-letivo" min="2000" max="2100" step="1" placeholder="Ex.: 2027">
+            <label class="rotulo-checkbox" for="copiar-config-ano">
+                <input type="checkbox" id="copiar-config-ano" checked>
+                Copiar matérias e valores do ano atual
+            </label>
+            <p id="mensagem-modal-ano-letivo" class="mensagem"></p>
+            <div class="modal-acoes">
+                <button type="button" id="botao-cancelar-modal-ano">Cancelar</button>
+                <button type="button" id="botao-confirmar-modal-ano">Criar ano</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-excluir-conta" class="modal" hidden>
         <div class="modal-fundo"></div>
         <div class="modal-caixa" role="dialog" aria-labelledby="titulo-modal-excluir-conta" aria-modal="true">
@@ -254,6 +287,9 @@
                     <button type="button" id="botao-duplicar-notas" class="botao-secundario">Copiar do bimestre anterior</button>
                 </div>
             </div>
+            <div id="aviso-valores-notas" class="aviso-painel" hidden>
+                Configure os <strong>valores por nota</strong> mais abaixo para ver o R$ de cada matéria.
+            </div>
             <div id="lista-notas-materias"></div>
             <button id="botao-calcular">Calcular bimestre</button>
             <p id="mensagem-validacao" class="mensagem"></p>
@@ -262,9 +298,10 @@
 
         <section  class="secao secao-resultado">
             <p class="rotulo-resultado">Valor do bimestre</p>
-            <p id="valor-bimestre"></p>
+            <p id="valor-bimestre">—</p>
             
             <p id="status-bimestre">Status: Aberto</p>
+            <p id="dica-resultado" class="dica-resultado">Preencha as notas e clique em Calcular bimestre para ver o resumo.</p>
             <p id="lista-valores"></p>
             <p id="total-positivo"></p>
             <p id="total-desconto"></p>
@@ -285,47 +322,28 @@
     <section class="secao">
         <h2>Valores por nota</h2>
 
-        <p class="dica-valores">Campos começam vazios. Digite o valor (use - para desconto). “Menor que 5” vale para notas de 0 a 4,9.</p>
-
-        <div class="grade-valores">
-            <div class="campo-valor">
-                <label for="config-valor-10">Nota 10:</label>
-                <input type="number" id="config-valor-10" step="1">
-            </div>
-
-            <div class="campo-valor">
-                <label for="config-valor-9">Nota 9:</label>
-                <input type="number" id="config-valor-9" step="1">
-            </div>
-
-            <div class="campo-valor">
-
-                <label for="config-valor-8">Nota 8:</label>
-                <input type="number" id="config-valor-8" step="1">
-            </div>
-
-            <div class="campo-valor">
-                <label for="config-valor-7">Nota 7:</label>
-                <input type="number" id="config-valor-7" step="1">
-            </div>
-
-            <div class="campo-valor">
-                <label for="config-valor-6">Nota 6:</label>
-                <input type="number" id="config-valor-6" step="1">
-            </div>     
-
-            <div class="campo-valor">
-                <label for="config-valor-5">Nota 5:</label>
-                <input type="number" id="config-valor-5" step="1">
-            </div>
-
-            <div class="campo-valor">
-                <label for="config-valor-menor-5">Menor que 5:</label>
-                <input type="number" id="config-valor-menor-5" step="1">
-            </div>
+        <div class="config-limite-recompensa">
+            <label for="select-inicio-desconto">Desconto a partir da nota</label>
+            <select id="select-inicio-desconto">
+                <option value="">Escolha...</option>
+                <option value="10">10</option>
+                <option value="9">9</option>
+                <option value="8">8</option>
+                <option value="7">7</option>
+                <option value="6">6</option>
+                <option value="5">5</option>
+                <option value="4">4</option>
+                <option value="3">3</option>
+                <option value="2">2</option>
+                <option value="1">1</option>
+            </select>
         </div>
 
-        <div class="acoes-valores">
+        <p id="dica-valores" class="dica-valores" hidden>Escolha acima a partir de qual nota começa o desconto. Depois preencha os valores. Nota menor que 1 zera o bimestre (perde tudo).</p>
+
+        <div id="grade-valores" class="grade-valores" hidden></div>
+
+        <div id="acoes-valores" class="acoes-valores" hidden>
             <button type="button" id="botao-salvar-valores">Salvar valores</button>
             <button type="button" id="botao-editar-valores" hidden>Editar valores</button>
         </div>
@@ -346,11 +364,11 @@
                 <p id="dashboard-notas-cadastradas" class="card-resumo-valor">0/0</p>
             </div>
             <div class="card-resumo card-resumo-menta">
-                <p class="card-resumo-rotulo">Notas maiores ou iguais a 8</p>
+                <p class="card-resumo-rotulo" id="rotulo-notas-acima">Notas maiores ou iguais a 8</p>
                 <p id="dashboard-notas-acima" class="card-resumo-valor">0</p>
             </div>
             <div class="card-resumo card-resumo-menta">
-                <p class="card-resumo-rotulo">Notas menores que 8</p>
+                <p class="card-resumo-rotulo" id="rotulo-notas-abaixo">Notas menores que 8</p>
                 <p id="dashboard-notas-abaixo" class="card-resumo-valor">0</p>
             </div>
         </div>
@@ -385,5 +403,14 @@
     </div>
 
     <script src="js/calculadora.js"></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("./sw.js").catch(function () {
+                    // Offline/PWA só funciona com http/https (não file://).
+                });
+            });
+        }
+    </script>
 </body>
 </html>
